@@ -1,0 +1,2812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JUSTIA — AI Legal Assistant for India</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════
+   CSS VARIABLES & RESET
+═══════════════════════════════════════════════ */
+:root {
+  --saffron:    #FF7A1A;
+  --saffron-lt: #FFB26B;
+  --ink:        #0D0D14;
+  --ink-2:      #1A1A2E;
+  --ink-3:      #24243E;
+  --cream:      #FAF6F0;
+  --cream-2:    #F0EAE0;
+  --gold:       #C8A96A;
+  --gold-lt:    #EDD9A3;
+  --jade:       #1DB87A;
+  --jade-lt:    #A8EFCE;
+  --sky:        #2D8BFF;
+  --sky-lt:     #A8CEFF;
+  --muted:      #8A8A9A;
+  --border:     rgba(255,255,255,0.08);
+  --radius:     16px;
+  --radius-sm:  8px;
+  --shadow:     0 24px 80px rgba(0,0,0,0.4);
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--ink);
+  color: var(--cream);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════
+   TYPOGRAPHY
+═══════════════════════════════════════════════ */
+.display { font-family: 'Playfair Display', serif; }
+.mono    { font-family: 'JetBrains Mono', monospace; }
+
+h1,h2,h3 { font-family: 'Playfair Display', serif; line-height: 1.15; }
+
+/* Noise texture is scoped to hero via .hero-bg — removed global fixed overlay */
+
+/* ═══════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 1000;
+  padding: 20px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(13,13,20,0.7);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none;
+}
+
+.logo-mark {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, var(--saffron), var(--gold));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-weight: 900; font-size: 20px; color: white;
+  box-shadow: 0 4px 20px rgba(255,122,26,0.4);
+}
+
+.logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 700;
+  color: var(--cream); letter-spacing: 0.05em;
+}
+
+.logo-text span { color: var(--saffron); }
+
+.nav-links {
+  display: flex; align-items: center; gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--muted); text-decoration: none;
+  font-size: 14px; font-weight: 500; letter-spacing: 0.02em;
+  transition: color var(--transition);
+}
+
+.nav-links a:hover { color: var(--cream); }
+
+.nav-right { display: flex; align-items: center; gap: 16px; }
+
+/* Language Toggle */
+.lang-toggle {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--ink-3);
+  border: 1px solid var(--border);
+  border-radius: 100px; padding: 6px 8px;
+  cursor: pointer;
+}
+
+.lang-btn {
+  padding: 4px 10px; border-radius: 100px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: none; background: transparent; color: var(--muted);
+  transition: all var(--transition);
+}
+.lang-btn.active {
+  background: var(--saffron);
+  color: white;
+}
+
+.nav-cta {
+  padding: 10px 22px;
+  background: linear-gradient(135deg, var(--saffron), #FF5533);
+  color: white; border: none; border-radius: 100px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: 0 4px 20px rgba(255,122,26,0.3);
+}
+.nav-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px rgba(255,122,26,0.5);
+}
+
+/* ═══════════════════════════════════════════════
+   HERO SECTION
+═══════════════════════════════════════════════ */
+#hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  padding: 120px 40px 80px;
+  position: relative; overflow: hidden;
+  background: var(--ink);
+  isolation: isolate;
+}
+
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 60% at 70% 50%, rgba(255,122,26,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 20% 80%, rgba(200,169,106,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 30% 30% at 80% 20%, rgba(29,184,122,0.06) 0%, transparent 50%),
+    var(--ink);
+}
+
+/* Animated orbs */
+.orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(60px); opacity: 0.3;
+  animation: float 8s ease-in-out infinite;
+}
+.orb-1 { width: 400px; height: 400px; background: var(--saffron); top: -100px; right: 10%; animation-delay: 0s; }
+.orb-2 { width: 300px; height: 300px; background: var(--gold); bottom: 10%; left: 5%; animation-delay: 3s; }
+.orb-3 { width: 200px; height: 200px; background: var(--jade); top: 30%; right: 30%; animation-delay: 6s; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30px) scale(1.05); }
+}
+
+.hero-inner {
+  position: relative; z-index: 1;
+  max-width: 1200px; margin: 0 auto; width: 100%;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,122,26,0.12);
+  border: 1px solid rgba(255,122,26,0.3);
+  border-radius: 100px; padding: 6px 16px;
+  font-size: 12px; font-weight: 600; color: var(--saffron);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.badge-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--saffron);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.hero-title {
+  font-size: clamp(40px, 5vw, 68px);
+  font-weight: 900; line-height: 1.05;
+  margin-bottom: 24px;
+}
+
+.hero-title em {
+  font-style: italic; color: var(--saffron);
+  background: linear-gradient(135deg, var(--saffron), var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+  font-size: 18px; color: var(--muted); line-height: 1.7;
+  margin-bottom: 40px; max-width: 480px;
+}
+
+.hero-actions {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+
+.btn-primary {
+  padding: 16px 32px;
+  background: linear-gradient(135deg, var(--saffron), #FF5533);
+  color: white; border: none; border-radius: 100px;
+  font-size: 16px; font-weight: 600; cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: 0 8px 30px rgba(255,122,26,0.4);
+  display: flex; align-items: center; gap: 8px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(255,122,26,0.5); }
+
+.btn-secondary {
+  padding: 16px 32px;
+  background: transparent;
+  color: var(--cream); border: 1px solid rgba(255,255,255,0.2); border-radius: 100px;
+  font-size: 16px; font-weight: 500; cursor: pointer;
+  transition: all var(--transition);
+  display: flex; align-items: center; gap: 8px;
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.4); }
+
+.hero-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  margin-top: 56px;
+  background: rgba(255,255,255,0.06);
+  border-radius: var(--radius); overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.stat-item {
+  padding: 24px 20px; background: rgba(255,255,255,0.03);
+  text-align: center;
+}
+.stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px; font-weight: 700; color: var(--cream);
+  display: block;
+}
+.stat-num .accent { color: var(--saffron); }
+.stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+/* Hero Visual - Mock Phone */
+.hero-visual {
+  position: relative; display: flex; justify-content: center;
+}
+
+.phone-frame {
+  width: 300px;
+  background: var(--ink-2);
+  border: 1px solid var(--border);
+  border-radius: 40px;
+  padding: 16px;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+  animation: phone-float 6s ease-in-out infinite;
+  position: relative; z-index: 2;
+}
+
+@keyframes phone-float {
+  0%, 100% { transform: translateY(0) rotateY(-5deg) rotateX(2deg); }
+  50% { transform: translateY(-12px) rotateY(-8deg) rotateX(4deg); }
+}
+
+.phone-notch {
+  width: 80px; height: 6px; background: var(--ink-3);
+  border-radius: 3px; margin: 0 auto 16px;
+}
+
+.phone-screen {
+  background: var(--ink-3); border-radius: 28px;
+  padding: 20px 16px; min-height: 480px;
+  overflow: hidden;
+}
+
+.chat-header-mini {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+  padding-bottom: 16px; border-bottom: 1px solid var(--border);
+}
+.chat-avatar-mini {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--saffron), var(--gold));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.chat-name-mini { font-size: 13px; font-weight: 600; color: var(--cream); }
+.chat-status-mini { font-size: 10px; color: var(--jade); }
+
+.msg-bubble {
+  margin-bottom: 12px;
+  animation: fadeInUp 0.5s ease both;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.msg-bot {
+  background: rgba(255,122,26,0.1);
+  border: 1px solid rgba(255,122,26,0.2);
+  border-radius: 14px 14px 14px 4px;
+  padding: 10px 12px;
+  font-size: 11.5px; color: var(--cream-2); line-height: 1.5;
+  max-width: 85%;
+}
+
+.msg-user {
+  background: rgba(45,139,255,0.12);
+  border: 1px solid rgba(45,139,255,0.2);
+  border-radius: 14px 14px 4px 14px;
+  padding: 10px 12px;
+  font-size: 11.5px; color: var(--cream-2); line-height: 1.5;
+  max-width: 85%; margin-left: auto;
+}
+
+.msg-tag {
+  font-size: 9px; color: var(--muted); margin-bottom: 4px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+.msg-1 { animation-delay: 0.2s; }
+.msg-2 { animation-delay: 0.8s; }
+.msg-3 { animation-delay: 1.4s; }
+.msg-4 { animation-delay: 2.0s; }
+
+/* Floating badges around phone */
+.float-badge {
+  position: absolute; z-index: 3;
+  background: var(--ink-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  font-size: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+.fb-1 { top: 10%; right: -60px; animation: float 5s ease-in-out infinite; }
+.fb-2 { bottom: 20%; left: -70px; animation: float 7s ease-in-out infinite 2s; }
+.fb-3 { top: 50%; right: -50px; animation: float 6s ease-in-out infinite 1s; }
+
+.fb-icon { font-size: 16px; margin-bottom: 2px; }
+.fb-label { color: var(--cream); font-weight: 600; }
+.fb-sub { color: var(--muted); font-size: 10px; }
+
+/* ═══════════════════════════════════════════════
+   SECTION COMMON
+═══════════════════════════════════════════════ */
+section {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  background: var(--ink); /* ensure opaque background always */
+}
+
+#problem, #ethics, #demo, #tech {
+  background: var(--ink-2);
+}
+
+.section-wrap {
+  max-width: 1200px; margin: 0 auto;
+  padding: 100px 40px;
+}
+
+.section-label {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--saffron);
+  margin-bottom: 16px;
+}
+
+.section-label::before {
+  content: '';
+  display: block; width: 20px; height: 2px;
+  background: var(--saffron);
+}
+
+.section-title {
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 700; line-height: 1.1;
+  margin-bottom: 20px;
+}
+
+.section-desc {
+  font-size: 17px; color: var(--muted); line-height: 1.7;
+  max-width: 560px;
+}
+
+/* ═══════════════════════════════════════════════
+   PROBLEM SECTION
+═══════════════════════════════════════════════ */
+#problem {
+  background: var(--ink-2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+#problem .section-wrap {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;
+}
+
+.problem-header { position: static; }
+
+.problem-cards { display: grid; gap: 16px; }
+
+.problem-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px;
+  transition: all var(--transition);
+  position: relative; overflow: hidden;
+}
+.problem-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--saffron), transparent);
+  opacity: 0; transition: opacity var(--transition);
+}
+.problem-card:hover { border-color: rgba(255,122,26,0.3); transform: translateX(4px); }
+.problem-card:hover::before { opacity: 1; }
+
+.problem-card-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 48px; font-weight: 900;
+  color: var(--saffron); opacity: 0.8; line-height: 1;
+  margin-bottom: 8px;
+}
+.problem-card-num sup { font-size: 24px; }
+
+.problem-card-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.problem-card-desc { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+.problem-chart {
+  margin-top: 32px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px;
+}
+.chart-title { font-size: 14px; font-weight: 600; margin-bottom: 20px; color: var(--cream-2); }
+
+.bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.bar-label { font-size: 12px; color: var(--muted); width: 80px; flex-shrink: 0; }
+.bar-track { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+.bar-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--saffron), var(--gold));
+  transform-origin: left;
+  animation: bar-grow 1.5s cubic-bezier(0.4,0,0.2,1) both;
+}
+@keyframes bar-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.bar-pct { font-size: 12px; color: var(--cream); font-weight: 600; width: 36px; text-align: right; }
+
+/* ═══════════════════════════════════════════════
+   SOLUTION SECTION
+═══════════════════════════════════════════════ */
+#solution { padding: 0; }
+#solution .section-wrap { padding-top: 100px; padding-bottom: 100px; }
+
+.solution-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  margin-top: 64px;
+}
+
+.sol-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 32px; transition: all var(--transition);
+  position: relative; overflow: hidden;
+}
+
+.sol-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(255,122,26,0.06), transparent 60%);
+  opacity: 0; transition: opacity var(--transition);
+}
+
+.sol-card:hover { transform: translateY(-4px); border-color: rgba(255,122,26,0.3); }
+.sol-card:hover::after { opacity: 1; }
+
+.sol-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; margin-bottom: 20px;
+}
+
+.sol-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+.sol-desc { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+.sol-tag {
+  display: inline-block; margin-top: 16px;
+  padding: 4px 10px; border-radius: 100px;
+  font-size: 11px; font-weight: 600;
+  background: rgba(255,122,26,0.12);
+  color: var(--saffron);
+}
+
+/* Language pills */
+.lang-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 64px; justify-content: center; }
+.lang-pill {
+  padding: 8px 20px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 100px; font-size: 14px;
+  transition: all var(--transition); cursor: default;
+}
+.lang-pill:hover { background: rgba(255,122,26,0.1); border-color: rgba(255,122,26,0.3); }
+.lang-pill .script { color: var(--gold); font-size: 16px; }
+
+/* ═══════════════════════════════════════════════
+   AI DEMO SECTION
+═══════════════════════════════════════════════ */
+#demo {
+  background: var(--ink-2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.demo-container {
+  display: grid; grid-template-columns: 380px 1fr; gap: 40px;
+  margin-top: 60px;
+}
+
+/* Chat sidebar info */
+.demo-info { position: sticky; top: 120px; }
+
+.demo-case-card {
+  background: rgba(255,122,26,0.08);
+  border: 1px solid rgba(255,122,26,0.2);
+  border-radius: var(--radius); padding: 24px;
+  margin-bottom: 20px;
+}
+.demo-case-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--saffron); margin-bottom: 8px; }
+.demo-case-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.demo-case-desc { font-size: 13px; color: var(--muted); }
+
+.demo-steps { list-style: none; }
+.demo-step {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+  font-size: 13px; color: var(--muted);
+  transition: color var(--transition);
+}
+.demo-step.active { color: var(--cream); }
+.demo-step-num {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  transition: all var(--transition);
+}
+.demo-step.active .demo-step-num {
+  background: var(--saffron); border-color: var(--saffron); color: white;
+}
+.demo-step.done .demo-step-num { background: var(--jade); border-color: var(--jade); color: white; }
+
+/* Chat Window */
+.chat-window {
+  background: var(--ink-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex; flex-direction: column;
+  height: 680px; overflow: hidden;
+}
+
+.chat-topbar {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.02);
+}
+
+.chat-agent {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.chat-avatar {
+  width: 42px; height: 42px;
+  background: linear-gradient(135deg, var(--saffron), var(--gold));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+
+.chat-agent-name { font-size: 15px; font-weight: 700; }
+.chat-agent-status {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--jade);
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--jade); animation: pulse 2s infinite; }
+
+.chat-controls { display: flex; gap: 10px; }
+.chat-ctrl-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px;
+  transition: all var(--transition);
+}
+.chat-ctrl-btn:hover { background: rgba(255,255,255,0.12); }
+
+.chat-disclaimer {
+  padding: 10px 24px;
+  background: rgba(255,122,26,0.06);
+  border-bottom: 1px solid rgba(255,122,26,0.15);
+  font-size: 11px; color: var(--saffron);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 24px;
+  display: flex; flex-direction: column; gap: 16px;
+  scroll-behavior: smooth;
+}
+
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* Message styles */
+.msg {
+  display: flex; flex-direction: column; max-width: 80%;
+  animation: msgIn 0.3s ease both;
+}
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.msg.from-bot { align-self: flex-start; }
+.msg.from-user { align-self: flex-end; }
+
+.msg-sender {
+  font-size: 11px; color: var(--muted);
+  margin-bottom: 4px; padding: 0 4px;
+}
+
+.msg-content {
+  padding: 14px 18px; border-radius: 18px;
+  font-size: 14px; line-height: 1.6;
+}
+
+.from-bot .msg-content {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 4px 18px 18px 18px;
+  color: var(--cream-2);
+}
+
+.from-user .msg-content {
+  background: linear-gradient(135deg, rgba(255,122,26,0.25), rgba(255,85,51,0.2));
+  border: 1px solid rgba(255,122,26,0.3);
+  border-radius: 18px 4px 18px 18px;
+  color: var(--cream);
+}
+
+/* Special message types */
+.msg-doc-list {
+  background: rgba(29,184,122,0.08);
+  border: 1px solid rgba(29,184,122,0.2);
+  border-radius: 12px; padding: 16px;
+  margin-top: 8px;
+}
+.doc-list-title { font-size: 13px; font-weight: 700; color: var(--jade); margin-bottom: 10px; }
+.doc-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 13px; color: var(--cream-2); margin-bottom: 8px;
+}
+.doc-check { color: var(--jade); flex-shrink: 0; font-size: 14px; }
+
+.msg-steps {
+  background: rgba(45,139,255,0.08);
+  border: 1px solid rgba(45,139,255,0.2);
+  border-radius: 12px; padding: 16px;
+  margin-top: 8px;
+}
+.steps-title { font-size: 13px; font-weight: 700; color: var(--sky); margin-bottom: 10px; }
+.step-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 13px; color: var(--cream-2); margin-bottom: 10px;
+}
+.step-num {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(45,139,255,0.2); border: 1px solid rgba(45,139,255,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: var(--sky); flex-shrink: 0;
+}
+
+.msg-source {
+  background: rgba(200,169,106,0.08);
+  border: 1px solid rgba(200,169,106,0.2);
+  border-radius: 12px; padding: 12px 16px;
+  margin-top: 8px; font-size: 12px; color: var(--muted);
+}
+.source-label { font-size: 11px; font-weight: 700; color: var(--gold); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+.source-item { color: var(--cream-2); margin-bottom: 4px; }
+.source-item a { color: var(--gold); text-decoration: none; }
+
+.msg-not-advice {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--saffron);
+  border-radius: 0 12px 12px 0;
+  padding: 10px 14px; font-size: 12px;
+  color: var(--muted); margin-top: 8px;
+  font-style: italic;
+}
+
+/* Quick reply buttons */
+.quick-replies { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.qr-btn {
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border); border-radius: 100px;
+  font-size: 13px; color: var(--cream-2); cursor: pointer;
+  transition: all var(--transition);
+}
+.qr-btn:hover, .qr-btn.selected {
+  background: rgba(255,122,26,0.15);
+  border-color: rgba(255,122,26,0.4); color: var(--cream);
+}
+
+/* Chat input */
+.chat-input-area {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+
+.input-row {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border); border-radius: 14px;
+  padding: 10px 14px;
+  transition: border-color var(--transition);
+}
+.input-row:focus-within { border-color: rgba(255,122,26,0.4); }
+
+#chat-input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--cream); font-size: 14px; font-family: 'DM Sans', sans-serif;
+  resize: none; max-height: 100px;
+}
+#chat-input::placeholder { color: var(--muted); }
+
+.input-btns { display: flex; gap: 6px; }
+
+.input-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: transparent; border: none; cursor: pointer;
+  color: var(--muted); font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition);
+}
+.input-btn:hover { color: var(--cream); background: rgba(255,255,255,0.06); }
+.input-btn.send { background: var(--saffron); color: white; }
+.input-btn.send:hover { background: #FF5533; }
+
+.input-meta { font-size: 11px; color: var(--muted); margin-top: 8px; text-align: center; }
+
+/* Typing indicator */
+.typing-indicator {
+  display: flex; align-items: center; gap: 4px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 4px 18px 18px 18px;
+  width: fit-content;
+}
+.typing-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--muted);
+  animation: typing 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30%           { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════
+   LEGAL GUARDRAILS SECTION
+═══════════════════════════════════════════════ */
+#guardrails .section-wrap {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+}
+
+.guardrails-viz {
+  position: relative; height: 420px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.guardrails-center {
+  width: 120px; height: 120px;
+  background: linear-gradient(135deg, var(--saffron), var(--gold));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px; z-index: 2;
+  box-shadow: 0 0 60px rgba(255,122,26,0.4);
+  animation: glow 3s ease-in-out infinite;
+}
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 40px rgba(255,122,26,0.4); }
+  50%       { box-shadow: 0 0 80px rgba(255,122,26,0.7); }
+}
+
+.guardrail-orbit {
+  position: absolute; border-radius: 50%;
+  border: 1px dashed rgba(255,122,26,0.2);
+  animation: orbit-spin 20s linear infinite;
+}
+.go-1 { width: 200px; height: 200px; }
+.go-2 { width: 300px; height: 300px; animation-duration: 30s; animation-direction: reverse; }
+.go-3 { width: 380px; height: 380px; animation-duration: 40s; }
+
+@keyframes orbit-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.orbit-node {
+  position: absolute; top: 50%; left: 50%;
+  width: 80px; height: 80px; margin: -40px;
+  background: var(--ink-2); border: 1px solid var(--border);
+  border-radius: 14px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 4px;
+  font-size: 10px; text-align: center; color: var(--muted);
+  animation: counter-spin 20s linear infinite;
+}
+.orbit-node-icon { font-size: 18px; }
+.go-2 .orbit-node { animation-duration: 30s; animation-direction: reverse; }
+.go-3 .orbit-node { animation-duration: 40s; animation-direction: normal; }
+
+/* position nodes on orbits */
+.node-1 { transform: rotate(0deg)   translate(100px) rotate(0deg); }
+.node-2 { transform: rotate(120deg) translate(100px) rotate(-120deg); }
+.node-3 { transform: rotate(240deg) translate(100px) rotate(-240deg); }
+.node-4 { transform: rotate(45deg)  translate(150px) rotate(-45deg); }
+.node-5 { transform: rotate(180deg) translate(150px) rotate(-180deg); }
+.node-6 { transform: rotate(315deg) translate(150px) rotate(-315deg); }
+.node-7 { transform: rotate(0deg)   translate(190px) rotate(0deg); }
+.node-8 { transform: rotate(180deg) translate(190px) rotate(-180deg); }
+
+@keyframes counter-spin { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+
+.guardrail-list { list-style: none; }
+.guardrail-item {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 20px 0; border-bottom: 1px solid var(--border);
+}
+.guardrail-icon {
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+  background: rgba(255,122,26,0.1); border: 1px solid rgba(255,122,26,0.2);
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+.guardrail-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.guardrail-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+/* ═══════════════════════════════════════════════
+   ETHICAL AI SECTION
+═══════════════════════════════════════════════ */
+#ethics {
+  background: var(--ink-2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.ethics-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;
+  margin-top: 60px;
+}
+
+.ethics-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 32px; transition: all var(--transition);
+  position: relative; overflow: hidden;
+}
+.ethics-card:hover { border-color: rgba(255,122,26,0.3); }
+
+.ethics-bg-num {
+  position: absolute; right: -10px; bottom: -20px;
+  font-family: 'Playfair Display', serif;
+  font-size: 120px; font-weight: 900;
+  color: rgba(255,255,255,0.02); line-height: 1;
+  pointer-events: none;
+}
+
+.ethics-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; margin-bottom: 20px;
+}
+
+.ethics-title { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+.ethics-desc { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+
+.ethics-metrics { display: flex; gap: 16px; flex-wrap: wrap; }
+.ethics-metric {
+  padding: 6px 12px; border-radius: 100px;
+  font-size: 12px; font-weight: 600;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+}
+
+/* ═══════════════════════════════════════════════
+   IMPACT / ROADMAP SECTION
+═══════════════════════════════════════════════ */
+#impact .section-wrap {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;
+}
+
+.roadmap {
+  position: relative;
+  padding-left: 40px;
+}
+.roadmap::before {
+  content: '';
+  position: absolute; left: 12px; top: 0; bottom: 0; width: 2px;
+  background: linear-gradient(to bottom, var(--saffron), transparent);
+}
+
+.roadmap-item {
+  position: relative; margin-bottom: 40px;
+}
+.roadmap-dot {
+  position: absolute; left: -40px; top: 4px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--ink-2); border: 2px solid var(--saffron);
+  display: flex; align-items: center; justify-content: center;
+}
+.rdot-inner {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--saffron);
+}
+.roadmap-item.future .roadmap-dot { border-color: var(--border); }
+.roadmap-item.future .rdot-inner { background: var(--muted); }
+
+.roadmap-phase { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--saffron); margin-bottom: 4px; }
+.roadmap-item.future .roadmap-phase { color: var(--muted); }
+.roadmap-title { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+.roadmap-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+.impact-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+.impact-stat {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 28px; text-align: center;
+}
+.impact-stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 40px; font-weight: 900; color: var(--cream);
+  display: block; margin-bottom: 6px;
+}
+.impact-stat-num .accent { color: var(--saffron); }
+.impact-stat-label { font-size: 13px; color: var(--muted); }
+
+.ngo-section {
+  margin-top: 40px;
+  background: rgba(29,184,122,0.06);
+  border: 1px solid rgba(29,184,122,0.2);
+  border-radius: var(--radius); padding: 24px;
+}
+.ngo-title { font-size: 14px; font-weight: 700; color: var(--jade); margin-bottom: 12px; }
+.ngo-logos { display: flex; flex-wrap: wrap; gap: 10px; }
+.ngo-logo {
+  padding: 6px 14px; border-radius: 100px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); font-size: 12px; color: var(--cream-2);
+}
+
+/* ═══════════════════════════════════════════════
+   TECH STACK SECTION
+═══════════════════════════════════════════════ */
+#tech .section-wrap { text-align: center; }
+
+.tech-arch {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
+  margin-top: 60px; background: var(--border); border-radius: var(--radius); overflow: hidden;
+}
+
+.tech-layer {
+  background: var(--ink-2); padding: 32px 20px;
+  transition: all var(--transition);
+}
+.tech-layer:hover { background: rgba(255,255,255,0.05); }
+
+.tech-layer-icon { font-size: 32px; margin-bottom: 12px; }
+.tech-layer-name { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.tech-layer-desc { font-size: 12px; color: var(--muted); }
+.tech-layer-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; justify-content: center; }
+.tech-tag {
+  padding: 3px 8px; border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; background: rgba(255,255,255,0.06); color: var(--gold-lt);
+}
+
+/* ═══════════════════════════════════════════════
+   CTA SECTION
+═══════════════════════════════════════════════ */
+#cta {
+  text-align: center;
+  background: linear-gradient(135deg, rgba(255,122,26,0.08), rgba(200,169,106,0.05));
+  border-top: 1px solid var(--border);
+}
+
+#cta .section-wrap { padding-top: 100px; padding-bottom: 100px; }
+
+.cta-title {
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 900; margin-bottom: 20px;
+}
+.cta-title em { font-style: italic; color: var(--saffron); }
+
+.cta-subtitle { font-size: 18px; color: var(--muted); max-width: 500px; margin: 0 auto 40px; }
+
+.cta-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════ */
+footer {
+  background: var(--ink); border-top: 1px solid var(--border);
+  padding: 60px 40px 40px;
+}
+
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px;
+}
+
+.footer-brand-desc { font-size: 14px; color: var(--muted); line-height: 1.6; margin-top: 12px; max-width: 260px; }
+.footer-legal { font-size: 11px; color: var(--muted); margin-top: 16px; line-height: 1.5; padding-top: 16px; border-top: 1px solid var(--border); }
+
+.footer-col-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--cream); margin-bottom: 16px; }
+.footer-links { list-style: none; }
+.footer-links li { margin-bottom: 10px; }
+.footer-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: color var(--transition); }
+.footer-links a:hover { color: var(--cream); }
+
+.footer-bottom {
+  max-width: 1200px; margin: 40px auto 0;
+  padding-top: 24px; border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; color: var(--muted);
+}
+
+/* ═══════════════════════════════════════════════
+   VOICE INDICATOR (animated)
+═══════════════════════════════════════════════ */
+.voice-bars {
+  display: flex; align-items: center; gap: 3px;
+  height: 20px;
+}
+.vbar {
+  width: 3px; border-radius: 2px; background: var(--saffron);
+  animation: vbar 1s ease-in-out infinite;
+}
+.vbar:nth-child(1) { height: 8px; animation-delay: 0s; }
+.vbar:nth-child(2) { height: 14px; animation-delay: 0.1s; }
+.vbar:nth-child(3) { height: 20px; animation-delay: 0.2s; }
+.vbar:nth-child(4) { height: 12px; animation-delay: 0.3s; }
+.vbar:nth-child(5) { height: 6px; animation-delay: 0.4s; }
+@keyframes vbar {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+  50%       { transform: scaleY(1);   opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════
+   SCROLL ANIMATIONS
+═══════════════════════════════════════════════ */
+.reveal {
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  nav { padding: 16px 20px; }
+  .nav-links { display: none; }
+  .hero-inner,
+  #problem .section-wrap,
+  #guardrails .section-wrap,
+  #impact .section-wrap { grid-template-columns: 1fr; gap: 40px; }
+  .solution-grid { grid-template-columns: 1fr 1fr; }
+  .demo-container { grid-template-columns: 1fr; }
+  .demo-info { position: static; }
+  .ethics-grid { grid-template-columns: 1fr; }
+  .tech-arch { grid-template-columns: 1fr 1fr; }
+  .footer-inner { grid-template-columns: 1fr 1fr; }
+  .section-wrap { padding: 60px 20px; }
+  .phone-frame { width: 260px; }
+  .hero-visual { display: none; }
+}
+
+@media (max-width: 600px) {
+  .solution-grid { grid-template-columns: 1fr; }
+  .tech-arch { grid-template-columns: 1fr; }
+  .footer-inner { grid-template-columns: 1fr; }
+  .impact-stats-grid { grid-template-columns: 1fr; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     NAVIGATION
+═══════════════════════════════════════════════ -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+    <div class="logo-mark">J</div>
+    <span class="logo-text">JUST<span>IA</span></span>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#problem" data-i18n="nav.problem">Problem</a></li>
+    <li><a href="#solution" data-i18n="nav.solution">Solution</a></li>
+    <li><a href="#demo" data-i18n="nav.demo">Live Demo</a></li>
+    <li><a href="#ethics" data-i18n="nav.ethics">Ethics</a></li>
+    <li><a href="#impact" data-i18n="nav.impact">Impact</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="switchLang(this, 'en')">EN</button>
+      <button class="lang-btn" onclick="switchLang(this, 'hi')">हि</button>
+      <button class="lang-btn" onclick="switchLang(this, 'ta')">த</button>
+      <button class="lang-btn" onclick="switchLang(this, 'te')">తె</button>
+      <button class="lang-btn" onclick="switchLang(this, 'bn')">বাং</button>
+    </div>
+    <button class="nav-cta" data-i18n="nav.cta" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">Try Demo →</button>
+  </div>
+</nav>
+
+
+<!-- ═══════════════════════════════════════════════
+     HERO SECTION
+═══════════════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="hero-inner">
+    <!-- Left Content -->
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        <span data-i18n="hero.badge">Multilingual AI for Legal Access</span>
+      </div>
+
+      <h1 class="hero-title display" data-i18n="hero.title">
+        Law that speaks<br>
+        <em>your language.</em>
+      </h1>
+
+      <p class="hero-subtitle" data-i18n="hero.subtitle">
+        JUSTIA makes India's complex legal system accessible to every citizen — in Hindi, Tamil, Telugu, Bengali and more — with AI-guided clarity, step-by-step procedures, and zero jargon.
+      </p>
+
+      <div class="hero-actions">
+        <button class="btn-primary" data-i18n="hero.btn1" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">
+          ⚖️ Ask a Legal Question
+        </button>
+        <button class="btn-secondary" data-i18n="hero.btn2" onclick="document.getElementById('problem').scrollIntoView({behavior:'smooth'})">
+          Learn More ↓
+        </button>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-num" data-i18n="hero.stat1.num"><span class="accent">1.4</span>B</span>
+          <div class="stat-label" data-i18n="hero.stat1.label">Population Underserved</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" data-i18n="hero.stat2.num"><span class="accent">22</span></span>
+          <div class="stat-label" data-i18n="hero.stat2.label">Official Languages</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" data-i18n="hero.stat3.num"><span class="accent">5M+</span></span>
+          <div class="stat-label" data-i18n="hero.stat3.label">Pending Court Cases</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Visual — Floating Phone -->
+    <div class="hero-visual">
+      <div class="float-badge fb-1">
+        <div class="fb-icon">🔒</div>
+        <div class="fb-label">Legal Guardrails</div>
+        <div class="fb-sub">Active</div>
+      </div>
+      <div class="float-badge fb-2">
+        <div class="fb-icon">🌐</div>
+        <div class="fb-label">4 Languages</div>
+        <div class="fb-sub">Supported</div>
+      </div>
+
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="chat-header-mini">
+            <div class="chat-avatar-mini">⚖️</div>
+            <div>
+              <div class="chat-name-mini">JUSTIA Assistant</div>
+              <div class="chat-status-mini">● Active</div>
+            </div>
+          </div>
+
+          <div class="msg-bubble msg-1">
+            <div class="msg-tag">JUSTIA</div>
+            <div class="msg-bot">नमस्ते! मैं JUSTIA हूँ। आज आपकी कानूनी समस्या क्या है?</div>
+          </div>
+          <div class="msg-bubble msg-2">
+            <div class="msg-tag" style="text-align:right">You</div>
+            <div class="msg-user">मेरा किराया जमा वापस नहीं मिल रहा</div>
+          </div>
+          <div class="msg-bubble msg-3">
+            <div class="msg-tag">JUSTIA</div>
+            <div class="msg-bot">समझा। आप किस राज्य में हैं? मैं वहाँ का कानून समझाता हूँ।</div>
+          </div>
+          <div class="msg-bubble msg-4">
+            <div class="msg-tag" style="text-align:right">You</div>
+            <div class="msg-user">महाराष्ट्र, मुंबई</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     PROBLEM SECTION
+═══════════════════════════════════════════════ -->
+<section id="problem">
+  <div class="section-wrap">
+    <div class="problem-header reveal">
+      <div class="section-label" data-i18n="prob.label">The Problem</div>
+      <h2 class="section-title" data-i18n="prob.title">Justice is inaccessible<br><em>at scale.</em></h2>
+      <p class="section-desc" data-i18n="prob.desc">
+        India's legal system is one of the world's most complex — and nearly impossible to navigate without expensive lawyers and English literacy.
+      </p>
+
+      <div class="problem-chart" style="margin-top:32px">
+        <div class="chart-title" data-i18n="prob.chart.title">Legal Awareness by Language Group (%)</div>
+        <div class="bar-row">
+          <div class="bar-label">Hindi</div>
+          <div class="bar-track"><div class="bar-fill" style="width:38%"></div></div>
+          <div class="bar-pct">38%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Tamil</div>
+          <div class="bar-track"><div class="bar-fill" style="width:29%; animation-delay:0.2s"></div></div>
+          <div class="bar-pct">29%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Telugu</div>
+          <div class="bar-track"><div class="bar-fill" style="width:24%; animation-delay:0.4s"></div></div>
+          <div class="bar-pct">24%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Bengali</div>
+          <div class="bar-track"><div class="bar-fill" style="width:21%; animation-delay:0.6s"></div></div>
+          <div class="bar-pct">21%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Others</div>
+          <div class="bar-track"><div class="bar-fill" style="width:12%; animation-delay:0.8s"></div></div>
+          <div class="bar-pct">12%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="problem-cards">
+      <div class="problem-card reveal">
+        <div class="problem-card-num">80<sup>%</sup></div>
+        <div class="problem-card-title" data-i18n="prob.c1.title">Can't afford a lawyer</div>
+        <div class="problem-card-desc" data-i18n="prob.c1.desc">Over 80% of Indians cannot afford standard legal fees, leaving disputes unresolved for years.</div>
+      </div>
+      <div class="problem-card reveal">
+        <div class="problem-card-num">47M+</div>
+        <div class="problem-card-title" data-i18n="prob.c2.title">Pending cases in courts</div>
+        <div class="problem-card-desc" data-i18n="prob.c2.desc">India's judiciary has an estimated 47 million+ pending cases, with an average wait of 13 years.</div>
+      </div>
+      <div class="problem-card reveal">
+        <div class="problem-card-num">99<sup>%</sup></div>
+        <div class="problem-card-title" data-i18n="prob.c3.title">Legal info is in English</div>
+        <div class="problem-card-desc" data-i18n="prob.c3.desc">Nearly all official legal documentation and online resources are available only in English.</div>
+      </div>
+      <div class="problem-card reveal">
+        <div class="problem-card-num">68<sup>%</sup></div>
+        <div class="problem-card-title" data-i18n="prob.c4.title">Rural population excluded</div>
+        <div class="problem-card-desc" data-i18n="prob.c4.desc">Two-thirds of India's population lives in rural areas with virtually no access to legal professionals.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     SOLUTION SECTION
+═══════════════════════════════════════════════ -->
+<section id="solution">
+  <div class="section-wrap">
+    <div style="text-align:center; max-width:640px; margin:0 auto;" class="reveal">
+      <div class="section-label" data-i18n="sol.label">The Solution</div>
+      <h2 class="section-title" data-i18n="sol.title">JUSTIA bridges the<br><em>justice gap.</em></h2>
+      <p class="section-desc" style="max-width:100%" data-i18n="sol.desc">
+        An AI-powered multilingual legal assistant that understands your situation, guides you step-by-step, and connects you with the right resources — all without replacing your lawyer.
+      </p>
+    </div>
+
+    <div class="solution-grid">
+      <div class="sol-card reveal">
+        <div class="sol-icon" style="background:rgba(255,122,26,0.1)">🌐</div>
+        <div class="sol-title">Multilingual First</div>
+        <div class="sol-desc">Full support for Hindi, Tamil, Telugu, Bengali with context-aware translation that preserves legal meaning.</div>
+        <div class="sol-tag">4 Languages Live</div>
+      </div>
+      <div class="sol-card reveal">
+        <div class="sol-icon" style="background:rgba(29,184,122,0.1)">🤖</div>
+        <div class="sol-title">AI-Guided Clarity</div>
+        <div class="sol-desc">Intelligent follow-up questions to understand your specific context before providing relevant information.</div>
+        <div class="sol-tag">Context-Aware</div>
+      </div>
+      <div class="sol-card reveal">
+        <div class="sol-icon" style="background:rgba(45,139,255,0.1)">📋</div>
+        <div class="sol-title">Document Checklists</div>
+        <div class="sol-desc">Auto-generated document lists tailored to your case type, state, and circumstances.</div>
+        <div class="sol-tag">State-Specific</div>
+      </div>
+      <div class="sol-card reveal">
+        <div class="sol-icon" style="background:rgba(200,169,106,0.1)">🏛️</div>
+        <div class="sol-title">Procedural Roadmaps</div>
+        <div class="sol-desc">Step-by-step guidance through legal procedures, court processes, and alternative dispute resolution.</div>
+        <div class="sol-tag">Simplified</div>
+      </div>
+      <div class="sol-card reveal">
+        <div class="sol-icon" style="background:rgba(255,122,26,0.1)">🔍</div>
+        <div class="sol-title">Court Case Lookup</div>
+        <div class="sol-desc">Track your existing case status in real-time via eCourts API integration.</div>
+        <div class="sol-tag">eCourts API</div>
+      </div>
+      <div class="sol-card reveal">
+        <div class="sol-icon" style="background:rgba(29,184,122,0.1)">🤝</div>
+        <div class="sol-title">NGO Network</div>
+        <div class="sol-desc">Seamlessly connect with 400+ registered legal aid NGOs and pro bono lawyers across India.</div>
+        <div class="sol-tag">400+ Partners</div>
+      </div>
+    </div>
+
+    <div class="lang-pills reveal">
+      <div class="lang-pill"><span class="script">हिन्दी</span> Hindi</div>
+      <div class="lang-pill"><span class="script">தமிழ்</span> Tamil</div>
+      <div class="lang-pill"><span class="script">తెలుగు</span> Telugu</div>
+      <div class="lang-pill"><span class="script">বাংলা</span> Bengali</div>
+      <div class="lang-pill"><span class="script">मराठी</span> Marathi <span style="color:var(--muted);font-size:11px">(Q2)</span></div>
+      <div class="lang-pill"><span class="script">ਪੰਜਾਬੀ</span> Punjabi <span style="color:var(--muted);font-size:11px">(Q3)</span></div>
+      <div class="lang-pill"><span class="script">ಕನ್ನಡ</span> Kannada <span style="color:var(--muted);font-size:11px">(Q3)</span></div>
+      <div class="lang-pill"><span class="script">+15</span> more planned</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     LIVE AI DEMO SECTION
+═══════════════════════════════════════════════ -->
+<section id="demo">
+  <div class="section-wrap">
+    <div class="reveal">
+      <div class="section-label" data-i18n="demo.label">Live Demo</div>
+      <h2 class="section-title" data-i18n="demo.title">See JUSTIA in action.</h2>
+      <p class="section-desc" data-i18n="demo.desc">Real example: Rental deposit dispute. Watch how JUSTIA guides a user from problem to actionable steps.</p>
+    </div>
+
+    <div class="demo-container">
+      <!-- Left: Info panel -->
+      <div class="demo-info">
+        <div class="demo-case-card">
+          <div class="demo-case-label" data-i18n="demo.case.label">Example Case</div>
+          <div class="demo-case-title" data-i18n="demo.case.title">🏠 Rental Deposit Dispute</div>
+          <div class="demo-case-desc" data-i18n="demo.case.desc">Landlord refusing to return security deposit after tenancy ends — Maharashtra</div>
+        </div>
+
+        <ul class="demo-steps" id="demo-steps">
+          <li class="demo-step active" id="step-1">
+            <div class="demo-step-num">1</div>
+            <div>State & Language detection</div>
+          </li>
+          <li class="demo-step" id="step-2">
+            <div class="demo-step-num">2</div>
+            <div>Contextual clarification</div>
+          </li>
+          <li class="demo-step" id="step-3">
+            <div class="demo-step-num">3</div>
+            <div>Legal explanation</div>
+          </li>
+          <li class="demo-step" id="step-4">
+            <div class="demo-step-num">4</div>
+            <div>Document checklist</div>
+          </li>
+          <li class="demo-step" id="step-5">
+            <div class="demo-step-num">5</div>
+            <div>Procedural steps</div>
+          </li>
+          <li class="demo-step" id="step-6">
+            <div class="demo-step-num">6</div>
+            <div>Sources & disclaimer</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Right: Chat Window -->
+      <div class="chat-window">
+        <!-- Top bar -->
+        <div class="chat-topbar">
+          <div class="chat-agent">
+            <div class="chat-avatar">⚖️</div>
+            <div>
+              <div class="chat-agent-name">JUSTIA Legal Assistant</div>
+              <div class="chat-agent-status"><div class="status-dot"></div> Online · Legal info only</div>
+            </div>
+          </div>
+          <div class="chat-controls">
+            <div class="chat-ctrl-btn" title="Voice Input" onclick="toggleVoice(this)">🎙️</div>
+            <div class="chat-ctrl-btn" title="Switch Language">🌐</div>
+            <div class="chat-ctrl-btn" title="Court Case Lookup">🔍</div>
+          </div>
+        </div>
+
+        <!-- Disclaimer strip -->
+        <div class="chat-disclaimer" data-i18n="chat.disclaimer">
+          ⚠️ JUSTIA provides legal <strong>information</strong>, not legal <strong>advice</strong>. For binding legal counsel, please consult a licensed advocate.
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-messages" id="chat-messages">
+          <!-- Seeded with welcome message - JS will add more -->
+        </div>
+
+        <!-- Input area -->
+        <div class="chat-input-area">
+          <div class="input-row">
+            <textarea id="chat-input" placeholder="Type your question in any language…" rows="1"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"
+              oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+            <div class="input-btns">
+              <button class="input-btn" title="Voice" onclick="toggleVoice(this)">🎙️</button>
+              <button class="input-btn send" title="Send" onclick="sendMessage()">↑</button>
+            </div>
+          </div>
+          <div class="input-meta">🔒 End-to-end encrypted · Powered by JUSTIA AI · <span id="lang-indicator">English</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     LEGAL GUARDRAILS
+═══════════════════════════════════════════════ -->
+<section id="guardrails">
+  <div class="section-wrap">
+    <div style="text-align:center; max-width:560px; margin:0 auto 60px;" class="reveal">
+      <div class="section-label" data-i18n="guard.label">Legal Guardrails</div>
+      <h2 class="section-title" data-i18n="guard.title">Built for<br><em>responsible AI.</em></h2>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center">
+      <!-- Visualization -->
+      <div class="guardrails-viz reveal">
+        <div class="guardrail-orbit go-1">
+          <div class="orbit-node node-1"><div class="orbit-node-icon">🔒</div>Data</div>
+          <div class="orbit-node node-2"><div class="orbit-node-icon">📋</div>Laws</div>
+          <div class="orbit-node node-3"><div class="orbit-node-icon">✅</div>Valid</div>
+        </div>
+        <div class="guardrail-orbit go-2">
+          <div class="orbit-node node-4"><div class="orbit-node-icon">🤝</div>NGOs</div>
+          <div class="orbit-node node-5"><div class="orbit-node-icon">⚖️</div>Courts</div>
+          <div class="orbit-node node-6"><div class="orbit-node-icon">🌐</div>Multi</div>
+        </div>
+        <div class="guardrail-orbit go-3">
+          <div class="orbit-node node-7"><div class="orbit-node-icon">🔍</div>Audit</div>
+          <div class="orbit-node node-8"><div class="orbit-node-icon">🛡️</div>Safe</div>
+        </div>
+        <div class="guardrails-center">⚖️</div>
+      </div>
+
+      <!-- List -->
+      <ul class="guardrail-list reveal">
+        <li class="guardrail-item">
+          <div class="guardrail-icon">🚫</div>
+          <div>
+            <div class="guardrail-title">No Legal Advice Generation</div>
+            <div class="guardrail-desc">JUSTIA never issues binding legal opinions. Every response is classified as "legal information" and clearly labeled as such.</div>
+          </div>
+        </li>
+        <li class="guardrail-item">
+          <div class="guardrail-icon">📚</div>
+          <div>
+            <div class="guardrail-title">Validated Legal Data Sources</div>
+            <div class="guardrail-desc">All legal content is sourced from India Code, eCourts, NCLT, and verified government repositories — never user-generated content.</div>
+          </div>
+        </li>
+        <li class="guardrail-item">
+          <div class="guardrail-icon">🧪</div>
+          <div>
+            <div class="guardrail-title">Hallucination Reduction Pipeline</div>
+            <div class="guardrail-desc">RAG-based architecture with citation enforcement. Every claim is grounded in a retrievable source document before output.</div>
+          </div>
+        </li>
+        <li class="guardrail-item">
+          <div class="guardrail-icon">🔄</div>
+          <div>
+            <div class="guardrail-title">Escalation to Human Experts</div>
+            <div class="guardrail-desc">Complex or ambiguous queries automatically route to partner NGOs and pro bono lawyers within the JUSTIA network.</div>
+          </div>
+        </li>
+        <li class="guardrail-item">
+          <div class="guardrail-icon">📝</div>
+          <div>
+            <div class="guardrail-title">Audit Logging & Oversight</div>
+            <div class="guardrail-desc">All AI outputs are logged, reviewable, and subject to quarterly legal review by a panel of practicing advocates.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     ETHICAL AI FRAMEWORK
+═══════════════════════════════════════════════ -->
+<section id="ethics">
+  <div class="section-wrap">
+    <div class="reveal">
+      <div class="section-label" data-i18n="ethics.label">Ethical AI Framework</div>
+      <h2 class="section-title" data-i18n="ethics.title">Fairness is not a<br><em>feature — it's the foundation.</em></h2>
+      <p class="section-desc" data-i18n="ethics.desc">JUSTIA's ethical architecture ensures equal, accurate, and culturally respectful legal information for every user.</p>
+    </div>
+
+    <div class="ethics-grid">
+      <div class="ethics-card reveal">
+        <div class="ethics-bg-num">01</div>
+        <div class="ethics-icon" style="background:rgba(255,122,26,0.1)">🧠</div>
+        <div class="ethics-title">Hallucination Reduction</div>
+        <div class="ethics-desc">RAG (Retrieval-Augmented Generation) pipeline cross-references every statement against a curated legal corpus of 50,000+ validated Indian legal documents. Outputs without a retrievable source are suppressed.</div>
+        <div class="ethics-metrics">
+          <span class="ethics-metric">RAG Architecture</span>
+          <span class="ethics-metric">Source-grounded</span>
+          <span class="ethics-metric">&lt;2% hallucination rate</span>
+        </div>
+      </div>
+
+      <div class="ethics-card reveal">
+        <div class="ethics-bg-num">02</div>
+        <div class="ethics-icon" style="background:rgba(45,139,255,0.1)">✅</div>
+        <div class="ethics-title">Legal Data Validation</div>
+        <div class="ethics-desc">All legal content is versioned against India Code and validated by a team of 12 practicing advocates. Outdated sections trigger automatic alerts and re-validation before serving to users.</div>
+        <div class="ethics-metrics">
+          <span class="ethics-metric">India Code API</span>
+          <span class="ethics-metric">Quarterly review</span>
+          <span class="ethics-metric">12 advocate panel</span>
+        </div>
+      </div>
+
+      <div class="ethics-card reveal">
+        <div class="ethics-bg-num">03</div>
+        <div class="ethics-icon" style="background:rgba(29,184,122,0.1)">🌍</div>
+        <div class="ethics-title">Cultural Sensitivity Safeguards</div>
+        <div class="ethics-desc">Language models fine-tuned on region-specific datasets accounting for local customs, religious law (Hindu, Muslim, Christian personal law), tribal law, and regional dialect variation.</div>
+        <div class="ethics-metrics">
+          <span class="ethics-metric">Personal law aware</span>
+          <span class="ethics-metric">Regional dialects</span>
+          <span class="ethics-metric">Tribal law support</span>
+        </div>
+      </div>
+
+      <div class="ethics-card reveal">
+        <div class="ethics-bg-num">04</div>
+        <div class="ethics-icon" style="background:rgba(200,169,106,0.1)">⚖️</div>
+        <div class="ethics-title">Bias Mitigation</div>
+        <div class="ethics-desc">Regular fairness audits across caste, gender, religion, and economic status dimensions. Outputs tested against demographic parity metrics. Independent third-party bias review annually.</div>
+        <div class="ethics-metrics">
+          <span class="ethics-metric">Demographic parity</span>
+          <span class="ethics-metric">3rd party audit</span>
+          <span class="ethics-metric">Gender neutral</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     IMPACT & ROADMAP
+═══════════════════════════════════════════════ -->
+<section id="impact">
+  <div class="section-wrap">
+    <div style="grid-column:1/-1; margin-bottom:0" class="reveal">
+      <div class="section-label" data-i18n="impact.label">Impact & Roadmap</div>
+      <h2 class="section-title" data-i18n="impact.title">Scaling justice<br><em>across India.</em></h2>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start">
+      <!-- Roadmap -->
+      <div>
+        <div class="roadmap reveal">
+          <div class="roadmap-item">
+            <div class="roadmap-dot"><div class="rdot-inner"></div></div>
+            <div class="roadmap-phase">Phase 1 · Now</div>
+            <div class="roadmap-title">MVP Launch — 4 Languages</div>
+            <div class="roadmap-desc">Hindi, Tamil, Telugu, Bengali. Core legal categories: Tenancy, Domestic Violence, Consumer Rights, Labour Law.</div>
+          </div>
+          <div class="roadmap-item">
+            <div class="roadmap-dot"><div class="rdot-inner"></div></div>
+            <div class="roadmap-phase">Phase 2 · Q2 2025</div>
+            <div class="roadmap-title">NGO Network + Voice Input</div>
+            <div class="roadmap-desc">400 NGO integrations. WhatsApp bot deployment. Voice interface for low-literacy users. Marathi & Gujarati added.</div>
+          </div>
+          <div class="roadmap-item future">
+            <div class="roadmap-dot"><div class="rdot-inner"></div></div>
+            <div class="roadmap-phase">Phase 3 · Q3 2025</div>
+            <div class="roadmap-title">eCourts & Document Drafting</div>
+            <div class="roadmap-desc">Live court case tracking. AI-assisted petition drafting. Integration with NALSA (National Legal Services Authority).</div>
+          </div>
+          <div class="roadmap-item future">
+            <div class="roadmap-dot"><div class="rdot-inner"></div></div>
+            <div class="roadmap-phase">Phase 4 · 2026</div>
+            <div class="roadmap-title">South Asia Expansion</div>
+            <div class="roadmap-desc">Bangladesh, Sri Lanka, Nepal — adapting the platform for South Asian legal frameworks.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Impact Stats + NGOs -->
+      <div>
+        <div class="impact-stats-grid reveal">
+          <div class="impact-stat">
+            <span class="impact-stat-num"><span class="accent">50M</span></span>
+            <div class="impact-stat-label">Citizens Reachable in Y1</div>
+          </div>
+          <div class="impact-stat">
+            <span class="impact-stat-num"><span class="accent">400+</span></span>
+            <div class="impact-stat-label">NGO Partners</div>
+          </div>
+          <div class="impact-stat">
+            <span class="impact-stat-num"><span class="accent">22</span></span>
+            <div class="impact-stat-label">States Covered</div>
+          </div>
+          <div class="impact-stat">
+            <span class="impact-stat-num"><span class="accent">0₹</span></span>
+            <div class="impact-stat-label">Cost to End Users</div>
+          </div>
+        </div>
+
+        <div class="ngo-section reveal">
+          <div class="ngo-title">🤝 NGO Integration Partners</div>
+          <div class="ngo-logos">
+            <div class="ngo-logo">NALSA</div>
+            <div class="ngo-logo">DLSA Network</div>
+            <div class="ngo-logo">Lawyers Collective</div>
+            <div class="ngo-logo">iJustice</div>
+            <div class="ngo-logo">HRLN</div>
+            <div class="ngo-logo">Majlis</div>
+            <div class="ngo-logo">+394 more</div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px; padding:20px 24px; background:rgba(255,122,26,0.06); border:1px solid rgba(255,122,26,0.2); border-radius:var(--radius); font-size:14px; color:var(--muted); line-height:1.6" class="reveal">
+          <strong style="color:var(--saffron)">Revenue Model:</strong> Freemium for individuals · B2G contracts with State Legal Services Authorities · Subscription tier for NGOs and law schools · CSR partnership with corporates for employee legal wellness.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     TECH STACK
+═══════════════════════════════════════════════ -->
+<section id="tech" style="background:var(--ink-2); border-top:1px solid var(--border)">
+  <div class="section-wrap">
+    <div class="reveal">
+      <div class="section-label" data-i18n="tech.label">Architecture</div>
+      <h2 class="section-title" data-i18n="tech.title">Production-grade<br><em>from day one.</em></h2>
+    </div>
+
+    <div class="tech-arch">
+      <div class="tech-layer reveal">
+        <div class="tech-layer-icon">🎤</div>
+        <div class="tech-layer-name">Input Layer</div>
+        <div class="tech-layer-desc">Multimodal intake across text, voice, and image</div>
+        <div class="tech-layer-tags">
+          <span class="tech-tag">Whisper v3</span>
+          <span class="tech-tag">Google STT</span>
+          <span class="tech-tag">IndicNLP</span>
+        </div>
+      </div>
+      <div class="tech-layer reveal">
+        <div class="tech-layer-icon">🧠</div>
+        <div class="tech-layer-name">AI Core</div>
+        <div class="tech-layer-desc">Legal-tuned LLM with RAG retrieval</div>
+        <div class="tech-layer-tags">
+          <span class="tech-tag">Claude API</span>
+          <span class="tech-tag">LlamaIndex</span>
+          <span class="tech-tag">FAISS</span>
+        </div>
+      </div>
+      <div class="tech-layer reveal">
+        <div class="tech-layer-icon">📚</div>
+        <div class="tech-layer-name">Legal KB</div>
+        <div class="tech-layer-desc">50K+ verified legal documents, state-wise indexed</div>
+        <div class="tech-layer-tags">
+          <span class="tech-tag">India Code</span>
+          <span class="tech-tag">eCourts API</span>
+          <span class="tech-tag">NCLT</span>
+        </div>
+      </div>
+      <div class="tech-layer reveal">
+        <div class="tech-layer-icon">🚀</div>
+        <div class="tech-layer-name">Delivery</div>
+        <div class="tech-layer-desc">Web, WhatsApp bot, PWA for offline access</div>
+        <div class="tech-layer-tags">
+          <span class="tech-tag">Next.js</span>
+          <span class="tech-tag">WhatsApp API</span>
+          <span class="tech-tag">AWS</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     CTA SECTION
+═══════════════════════════════════════════════ -->
+<section id="cta">
+  <div class="section-wrap reveal">
+    <h2 class="cta-title display" data-i18n="cta.title">Access to law<br>is a <em>right,</em><br>not a privilege.</h2>
+    <p class="cta-subtitle" data-i18n="cta.subtitle">Join JUSTIA in making Indian law accessible, understandable, and actionable for every citizen.</p>
+    <div class="cta-buttons">
+      <button class="btn-primary" data-i18n="cta.btn1" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">
+        ⚖️ Try JUSTIA Free
+      </button>
+      <button class="btn-secondary" data-i18n="cta.btn2">📩 Partner With Us</button>
+      <button class="btn-secondary" data-i18n="cta.btn3">📄 Download Pitch Deck</button>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <a href="#" class="nav-logo" style="text-decoration:none">
+        <div class="logo-mark">J</div>
+        <span class="logo-text">JUST<span>IA</span></span>
+      </a>
+      <p class="footer-brand-desc">
+        Making India's legal system accessible to every citizen — in their language, at zero cost.
+      </p>
+      <div class="footer-legal">
+        JUSTIA is a legal information platform. It does not provide legal advice, representation, or opinion. All information is sourced from publicly available government resources. For legal advice, consult a licensed advocate registered with the Bar Council of India.
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Platform</div>
+      <ul class="footer-links">
+        <li><a href="#">How it works</a></li>
+        <li><a href="#">Languages</a></li>
+        <li><a href="#">Case Types</a></li>
+        <li><a href="#">NGO Network</a></li>
+        <li><a href="#">Court Lookup</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Company</div>
+      <ul class="footer-links">
+        <li><a href="#">About</a></li>
+        <li><a href="#">Ethics Framework</a></li>
+        <li><a href="#">Press Kit</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Legal</div>
+      <ul class="footer-links">
+        <li><a href="#">Disclaimer</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Use</a></li>
+        <li><a href="#">Data Governance</a></li>
+        <li><a href="#">Grievance Officer</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 JUSTIA Technologies Pvt. Ltd. · Made in India 🇮🇳</span>
+    <span>CIN: U74999MH2025PTC000001</span>
+  </div>
+</footer>
+
+
+<!-- ═══════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════ -->
+<script>
+// ── FULL TRANSLATION ENGINE ───────────────────────
+const langLabels = {
+  en: 'English', hi: 'हिन्दी', ta: 'தமிழ்', te: 'తెలుగు', bn: 'বাংলা'
+};
+
+// All translatable strings keyed by data-i18n attribute
+const translations = {
+  en: {
+    'nav.problem':       'Problem',
+    'nav.solution':      'Solution',
+    'nav.demo':          'Live Demo',
+    'nav.ethics':        'Ethics',
+    'nav.impact':        'Impact',
+    'nav.cta':           'Try Demo →',
+    'hero.badge':        'Multilingual AI for Legal Access',
+    'hero.title':        'Law that speaks<br><em>your language.</em>',
+    'hero.subtitle':     "JUSTIA makes India's complex legal system accessible to every citizen — in Hindi, Tamil, Telugu, Bengali and more — with AI-guided clarity, step-by-step procedures, and zero jargon.",
+    'hero.btn1':         '⚖️ Ask a Legal Question',
+    'hero.btn2':         'Learn More ↓',
+    'hero.stat1.num':    '1.4B',
+    'hero.stat1.label':  'Population Underserved',
+    'hero.stat2.num':    '22',
+    'hero.stat2.label':  'Official Languages',
+    'hero.stat3.num':    '5M+',
+    'hero.stat3.label':  'Pending Court Cases',
+    'prob.label':        'The Problem',
+    'prob.title':        'Justice is inaccessible<br><em>at scale.</em>',
+    'prob.desc':         "India's legal system is one of the world's most complex — and nearly impossible to navigate without expensive lawyers and English literacy.",
+    'prob.chart.title':  'Legal Awareness by Language Group (%)',
+    'prob.c1.title':     "Can't afford a lawyer",
+    'prob.c1.desc':      'Over 80% of Indians cannot afford standard legal fees, leaving disputes unresolved for years.',
+    'prob.c2.title':     'Pending cases in courts',
+    'prob.c2.desc':      "India's judiciary has an estimated 47 million+ pending cases, with an average wait of 13 years.",
+    'prob.c3.title':     'Legal info is in English',
+    'prob.c3.desc':      'Nearly all official legal documentation and online resources are available only in English.',
+    'prob.c4.title':     'Rural population excluded',
+    'prob.c4.desc':      "Two-thirds of India's population lives in rural areas with virtually no access to legal professionals.",
+    'sol.label':         'The Solution',
+    'sol.title':         'JUSTIA bridges the<br><em>justice gap.</em>',
+    'sol.desc':          'An AI-powered multilingual legal assistant that understands your situation, guides you step-by-step, and connects you with the right resources — all without replacing your lawyer.',
+    'demo.label':        'Live Demo',
+    'demo.title':        'See JUSTIA in action.',
+    'demo.desc':         'Real example: Rental deposit dispute. Watch how JUSTIA guides a user from problem to actionable steps.',
+    'demo.case.label':   'Example Case',
+    'demo.case.title':   '🏠 Rental Deposit Dispute',
+    'demo.case.desc':    'Landlord refusing to return security deposit after tenancy ends — Maharashtra',
+    'chat.disclaimer':   '⚠️ JUSTIA provides legal <strong>information</strong>, not legal <strong>advice</strong>. For binding legal counsel, please consult a licensed advocate.',
+    'chat.placeholder':  'Type your question in any language…',
+    'chat.meta':         '🔒 End-to-end encrypted · Powered by JUSTIA AI · ',
+    'guard.label':       'Legal Guardrails',
+    'guard.title':       'Built for<br><em>responsible AI.</em>',
+    'ethics.label':      'Ethical AI Framework',
+    'ethics.title':      'Fairness is not a<br><em>feature — it\'s the foundation.</em>',
+    'ethics.desc':       "JUSTIA's ethical architecture ensures equal, accurate, and culturally respectful legal information for every user.",
+    'impact.label':      'Impact & Roadmap',
+    'impact.title':      'Scaling justice<br><em>across India.</em>',
+    'tech.label':        'Architecture',
+    'tech.title':        'Production-grade<br><em>from day one.</em>',
+    'cta.title':         'Access to law<br>is a <em>right,</em><br>not a privilege.',
+    'cta.subtitle':      'Join JUSTIA in making Indian law accessible, understandable, and actionable for every citizen.',
+    'cta.btn1':          '⚖️ Try JUSTIA Free',
+    'cta.btn2':          '📩 Partner With Us',
+    'cta.btn3':          '📄 Download Pitch Deck',
+  },
+  hi: {
+    'nav.problem':       'समस्या',
+    'nav.solution':      'समाधान',
+    'nav.demo':          'लाइव डेमो',
+    'nav.ethics':        'नैतिकता',
+    'nav.impact':        'प्रभाव',
+    'nav.cta':           'डेमो आज़माएं →',
+    'hero.badge':        'कानूनी पहुँच के लिए बहुभाषी AI',
+    'hero.title':        'कानून जो बोले<br><em>आपकी भाषा में।</em>',
+    'hero.subtitle':     'JUSTIA भारत की जटिल कानूनी प्रणाली को हर नागरिक तक पहुँचाता है — हिंदी, तमिल, तेलुगु, बंगाली और अन्य भाषाओं में — AI-मार्गदर्शन, चरण-दर-चरण प्रक्रियाओं और शून्य जटिलता के साथ।',
+    'hero.btn1':         '⚖️ कानूनी सवाल पूछें',
+    'hero.btn2':         'और जानें ↓',
+    'hero.stat1.num':    '1.4B',
+    'hero.stat1.label':  'वंचित जनसंख्या',
+    'hero.stat2.num':    '22',
+    'hero.stat2.label':  'आधिकारिक भाषाएं',
+    'hero.stat3.num':    '5M+',
+    'hero.stat3.label':  'लंबित न्यायालय मामले',
+    'prob.label':        'समस्या',
+    'prob.title':        'न्याय बड़े पैमाने पर<br><em>अपहुँच है।</em>',
+    'prob.desc':         'भारत की कानूनी प्रणाली दुनिया की सबसे जटिल प्रणालियों में से एक है — और महंगे वकीलों और अंग्रेजी साक्षरता के बिना नेविगेट करना लगभग असंभव है।',
+    'prob.chart.title':  'भाषा समूह के अनुसार कानूनी जागरूकता (%)',
+    'prob.c1.title':     'वकील नहीं कर सकते',
+    'prob.c1.desc':      '80% से अधिक भारतीय मानक कानूनी शुल्क वहन नहीं कर सकते, जिससे विवाद वर्षों तक अनसुलझे रहते हैं।',
+    'prob.c2.title':     'न्यायालयों में लंबित मामले',
+    'prob.c2.desc':      'भारतीय न्यायपालिका में अनुमानित 47 मिलियन+ लंबित मामले हैं, औसत प्रतीक्षा 13 वर्ष है।',
+    'prob.c3.title':     'कानूनी जानकारी अंग्रेजी में है',
+    'prob.c3.desc':      'लगभग सभी आधिकारिक कानूनी दस्तावेज़ीकरण और ऑनलाइन संसाधन केवल अंग्रेजी में उपलब्ध हैं।',
+    'prob.c4.title':     'ग्रामीण आबादी बाहर',
+    'prob.c4.desc':      'भारत की दो-तिहाई आबादी ग्रामीण क्षेत्रों में रहती है जहां कानूनी पेशेवरों तक कोई पहुँच नहीं है।',
+    'sol.label':         'समाधान',
+    'sol.title':         'JUSTIA पाटता है<br><em>न्याय की खाई।</em>',
+    'sol.desc':          'एक AI-संचालित बहुभाषी कानूनी सहायक जो आपकी स्थिति को समझता है, चरण-दर-चरण मार्गदर्शन करता है।',
+    'demo.label':        'लाइव डेमो',
+    'demo.title':        'JUSTIA को काम करते देखें।',
+    'demo.desc':         'वास्तविक उदाहरण: किराया जमा विवाद। देखें कैसे JUSTIA उपयोगकर्ता को समाधान तक ले जाता है।',
+    'demo.case.label':   'उदाहरण मामला',
+    'demo.case.title':   '🏠 किराया जमा विवाद',
+    'demo.case.desc':    'मकान मालिक किरायेदारी समाप्त होने के बाद सुरक्षा जमा वापस करने से इनकार कर रहा है',
+    'chat.disclaimer':   '⚠️ JUSTIA कानूनी <strong>जानकारी</strong> प्रदान करता है, कानूनी <strong>सलाह</strong> नहीं। बाध्यकारी कानूनी परामर्श के लिए कृपया लाइसेंस प्राप्त वकील से परामर्श करें।',
+    'chat.placeholder':  'किसी भी भाषा में अपना प्रश्न टाइप करें…',
+    'chat.meta':         '🔒 एंड-टू-एंड एन्क्रिप्टेड · JUSTIA AI द्वारा संचालित · ',
+    'guard.label':       'कानूनी सुरक्षा उपाय',
+    'guard.title':       'जिम्मेदार AI के लिए<br><em>निर्मित।</em>',
+    'ethics.label':      'नैतिक AI ढांचा',
+    'ethics.title':      'निष्पक्षता कोई<br><em>सुविधा नहीं — यह नींव है।</em>',
+    'ethics.desc':       'JUSTIA की नैतिक संरचना हर उपयोगकर्ता के लिए समान, सटीक और सांस्कृतिक रूप से सम्मानजनक कानूनी जानकारी सुनिश्चित करती है।',
+    'impact.label':      'प्रभाव और रोडमैप',
+    'impact.title':      'न्याय का विस्तार<br><em>पूरे भारत में।</em>',
+    'tech.label':        'आर्किटेक्चर',
+    'tech.title':        'पहले दिन से<br><em>प्रोडक्शन-ग्रेड।</em>',
+    'cta.title':         'कानून तक पहुँच<br>एक <em>अधिकार है,</em><br>विशेषाधिकार नहीं।',
+    'cta.subtitle':      'JUSTIA के साथ जुड़ें और भारतीय कानून को हर नागरिक के लिए सुलभ बनाएं।',
+    'cta.btn1':          '⚖️ JUSTIA मुफ्त आज़माएं',
+    'cta.btn2':          '📩 हमारे साथ साझेदारी करें',
+    'cta.btn3':          '📄 पिच डेक डाउनलोड करें',
+  },
+  ta: {
+    'nav.problem':       'சிக்கல்',
+    'nav.solution':      'தீர்வு',
+    'nav.demo':          'நேரடி டெமோ',
+    'nav.ethics':        'நீதிமன்றம்',
+    'nav.impact':        'தாக்கம்',
+    'nav.cta':           'டெமோ பாருங்கள் →',
+    'hero.badge':        'சட்ட அணுகலுக்கான பன்மொழி AI',
+    'hero.title':        'உங்கள் மொழியில்<br><em>பேசும் சட்டம்.</em>',
+    'hero.subtitle':     'JUSTIA இந்தியாவின் சிக்கலான சட்ட அமைப்பை ஒவ்வொரு குடிமகனுக்கும் எளிதாக்குகிறது — தமிழ், ஹிந்தி, தெலுங்கு, வங்காளம் மற்றும் பலவற்றில் — AI வழிகாட்டுதல், படிப்படியான நடைமுறைகள் மற்றும் சிக்கல் இல்லாமல்.',
+    'hero.btn1':         '⚖️ சட்ட கேள்வி கேளுங்கள்',
+    'hero.btn2':         'மேலும் அறிக ↓',
+    'hero.stat1.num':    '1.4B',
+    'hero.stat1.label':  'சேவை பெறாத மக்கள்',
+    'hero.stat2.num':    '22',
+    'hero.stat2.label':  'அதிகாரப்பூர்வ மொழிகள்',
+    'hero.stat3.num':    '5M+',
+    'hero.stat3.label':  'நிலுவையிலுள்ள வழக்குகள்',
+    'prob.label':        'சிக்கல்',
+    'prob.title':        'நீதி பெரிய அளவில்<br><em>அணுக முடியாமல் உள்ளது.</em>',
+    'prob.desc':         'இந்தியாவின் சட்ட அமைப்பு உலகின் மிகவும் சிக்கலான அமைப்புகளில் ஒன்றாகும் — விலையுயர்ந்த வழக்கறிஞர்கள் மற்றும் ஆங்கில கல்வியறிவு இல்லாமல் வழிசெலுத்துவது கிட்டத்தட்ட சாத்தியமற்றது.',
+    'prob.chart.title':  'மொழி குழுவின்படி சட்ட விழிப்புணர்வு (%)',
+    'prob.c1.title':     'வழக்கறிஞரை வாங்க முடியாது',
+    'prob.c1.desc':      '80% க்கும் அதிகமான இந்தியர்களால் நிலையான சட்ட கட்டணங்களை감당 முடியாது, இதனால் தகராறுகள் பல ஆண்டுகளாக தீர்க்கப்படாமல் உள்ளன.',
+    'prob.c2.title':     'நீதிமன்றங்களில் நிலுவையிலுள்ள வழக்குகள்',
+    'prob.c2.desc':      'இந்தியா நீதித்துறையில் மதிப்பிட்டு 47 மில்லியன்+ நிலுவை வழக்குகள் உள்ளன, சராசரி காத்திருப்பு 13 ஆண்டுகள்.',
+    'prob.c3.title':     'சட்ட தகவல் ஆங்கிலத்தில்',
+    'prob.c3.desc':      'கிட்டத்தட்ட அனைத்து அதிகாரப்பூர்வ சட்ட ஆவணங்களும் ஆன்லைன் வளங்களும் ஆங்கிலத்தில் மட்டுமே கிடைக்கின்றன.',
+    'prob.c4.title':     'கிராமப்புற மக்கள் விலக்கப்பட்டுள்ளனர்',
+    'prob.c4.desc':      'இந்தியா மக்கள்தொகையில் மூன்றில் இரண்டு பங்கு கிராமப்புற பகுதிகளில் வாழ்கிறார்கள், அங்கு சட்ட வல்லுனர்களுக்கான அணுகல் இல்லை.',
+    'sol.label':         'தீர்வு',
+    'sol.title':         'JUSTIA நீதி இடைவெளியை<br><em>குறைக்கிறது.</em>',
+    'sol.desc':          'உங்கள் நிலைமையை புரிந்துகொண்டு, படிப்படியாக வழிகாட்டி, சரியான வளங்களுடன் இணைக்கும் AI-இயங்கும் பன்மொழி சட்ட உதவியாளர்.',
+    'demo.label':        'நேரடி டெமோ',
+    'demo.title':        'JUSTIA செயலில் பாருங்கள்.',
+    'demo.desc':         'உண்மையான உதாரணம்: வாடகை வைப்புத்தொகை தகராறு. JUSTIA எவ்வாறு ஒரு பயனரை சிக்கலிலிருந்து நடவடிக்கை படிகளுக்கு வழிகாட்டுகிறது என பாருங்கள்.',
+    'demo.case.label':   'உதாரண வழக்கு',
+    'demo.case.title':   '🏠 வாடகை வைப்புத்தொகை தகராறு',
+    'demo.case.desc':    'குத்தகை முடிந்த பிறகு வீட்டு உரிமையாளர் பாதுகாப்பு வைப்புத்தொகையை திரும்பப் பெற மறுக்கிறார்',
+    'chat.disclaimer':   '⚠️ JUSTIA சட்ட <strong>தகவல்</strong> வழங்குகிறது, சட்ட <strong>ஆலோசனை</strong> அல்ல. கட்டுப்படுத்தும் சட்ட ஆலோசனைக்கு உரிமம் பெற்ற வழக்கறிஞரை அணுகவும்.',
+    'chat.placeholder':  'எந்த மொழியிலும் உங்கள் கேள்வியை தட்டச்சு செய்யுங்கள்…',
+    'chat.meta':         '🔒 முனை-முனை குறியாக்கம் · JUSTIA AI ஆல் இயக்கப்படுகிறது · ',
+    'guard.label':       'சட்ட பாதுகாப்பு',
+    'guard.title':       'பொறுப்பான AI க்காக<br><em>கட்டமைக்கப்பட்டது.</em>',
+    'ethics.label':      'நெறிமுறை AI கட்டமைப்பு',
+    'ethics.title':      'நியாயம் ஒரு<br><em>அம்சம் அல்ல — அது அடித்தளம்.</em>',
+    'ethics.desc':       'JUSTIA இன் நெறிமுறை கட்டமைப்பு ஒவ்வொரு பயனருக்கும் சம, துல்லியமான மற்றும் கலாச்சார மரியாதையுடன் கூடிய சட்ட தகவலை உறுதி செய்கிறது.',
+    'impact.label':      'தாக்கம் & வரைபடம்',
+    'impact.title':      'இந்தியா முழுவதும்<br><em>நீதி விரிவடைகிறது.</em>',
+    'tech.label':        'கட்டமைப்பு',
+    'tech.title':        'முதல் நாளிலிருந்தே<br><em>உற்பத்தி தரம்.</em>',
+    'cta.title':         'சட்டத்திற்கான அணுகல்<br>ஒரு <em>உரிமை,</em><br>சலுகை அல்ல.',
+    'cta.subtitle':      'இந்திய சட்டத்தை ஒவ்வொரு குடிமகனுக்கும் அணுகக்கூடியதாகவும் புரிந்துகொள்ளக்கூடியதாகவும் செய்ய JUSTIA உடன் இணையுங்கள்.',
+    'cta.btn1':          '⚖️ JUSTIA ஐ இலவசமாக முயற்சி செய்யுங்கள்',
+    'cta.btn2':          '📩 எங்களுடன் கூட்டாளி ஆகுங்கள்',
+    'cta.btn3':          '📄 பிட்ச் டெக் பதிவிறக்கம்',
+  },
+  te: {
+    'nav.problem':       'సమస్య',
+    'nav.solution':      'పరిష్కారం',
+    'nav.demo':          'లైవ్ డెమో',
+    'nav.ethics':        'నీతి',
+    'nav.impact':        'ప్రభావం',
+    'nav.cta':           'డెమో చూడండి →',
+    'hero.badge':        'న్యాయ ప్రాప్యత కోసం బహుభాషా AI',
+    'hero.title':        'మీ భాషలో<br><em>మాట్లాడే న్యాయం.</em>',
+    'hero.subtitle':     'JUSTIA భారతదేశం యొక్క సంక్లిష్ట న్యాయ వ్యవస్థను ప్రతి పౌరుడికి అందుబాటులో ఉంచుతుంది — తెలుగు, హిందీ, తమిళం, బెంగాలీ మరియు ఇతర భాషలలో — AI మార్గదర్శకత్వంతో.',
+    'hero.btn1':         '⚖️ న్యాయ ప్రశ్న అడగండి',
+    'hero.btn2':         'మరింత తెలుసుకోండి ↓',
+    'hero.stat1.num':    '1.4B',
+    'hero.stat1.label':  'సేవ పొందని జనాభా',
+    'hero.stat2.num':    '22',
+    'hero.stat2.label':  'అధికారిక భాషలు',
+    'hero.stat3.num':    '5M+',
+    'hero.stat3.label':  'పెండింగ్ కోర్టు కేసులు',
+    'prob.label':        'సమస్య',
+    'prob.title':        'న్యాయం పెద్ద ఎత్తున<br><em>అందుబాటులో లేదు.</em>',
+    'prob.desc':         'భారతదేశ న్యాయ వ్యవస్థ ప్రపంచంలోనే అత్యంత సంక్లిష్టమైనది — ఖరీదైన న్యాయవాదులు మరియు ఆంగ్ల అక్షరాస్యత లేకుండా నావిగేట్ చేయడం దాదాపు అసాధ్యం.',
+    'prob.chart.title':  'భాషా సమూహం వారీగా న్యాయ అవగాహన (%)',
+    'prob.c1.title':     'న్యాయవాదిని భరించలేరు',
+    'prob.c1.desc':      '80% కంటే ఎక్కువ భారతీయులు న్యాయ రుసుములను భరించలేరు, దీని వలన వివాదాలు సంవత్సరాల తరబడి పరిష్కరించబడవు.',
+    'prob.c2.title':     'కోర్టులలో పెండింగ్ కేసులు',
+    'prob.c2.desc':      'భారత న్యాయవ్యవస్థలో అంచనా 47 మిలియన్+ పెండింగ్ కేసులు ఉన్నాయి, సగటు వేచి ఉండే సమయం 13 సంవత్సరాలు.',
+    'prob.c3.title':     'న్యాయ సమాచారం ఆంగ్లంలో',
+    'prob.c3.desc':      'దాదాపు అన్ని అధికారిక న్యాయ పత్రాలు మరియు ఆన్‌లైన్ వనరులు ఆంగ్లంలో మాత్రమే అందుబాటులో ఉన్నాయి.',
+    'prob.c4.title':     'గ్రామీణ జనాభా మినహాయించబడింది',
+    'prob.c4.desc':      'భారతదేశ జనాభాలో మూడింట రెండు వంతులు గ్రామీణ ప్రాంతాలలో నివసిస్తున్నారు, అక్కడ న్యాయ నిపుణులకు ప్రాప్యత లేదు.',
+    'sol.label':         'పరిష్కారం',
+    'sol.title':         'JUSTIA న్యాయ అంతరాన్ని<br><em>తగ్గిస్తుంది.</em>',
+    'sol.desc':          'మీ పరిస్థితిని అర్థం చేసుకుని, దశలవారీగా మార్గనిర్దేశం చేసి, సరైన వనరులతో కలిపే AI-ఆధారిత బహుభాషా న్యాయ సహాయకుడు.',
+    'demo.label':        'లైవ్ డెమో',
+    'demo.title':        'JUSTIA చర్యలో చూడండి.',
+    'demo.desc':         'నిజమైన ఉదాహరణ: అద్దె డిపాజిట్ వివాదం. JUSTIA వినియోగదారుని సమస్య నుండి చర్య దశలకు ఎలా మార్గనిర్దేశం చేస్తుందో చూడండి.',
+    'demo.case.label':   'ఉదాహరణ కేసు',
+    'demo.case.title':   '🏠 అద్దె డిపాజిట్ వివాదం',
+    'demo.case.desc':    'అద్దె ముగిసిన తర్వాత యజమాని భద్రతా డిపాజిట్ తిరిగి ఇవ్వడానికి నిరాకరిస్తున్నారు',
+    'chat.disclaimer':   '⚠️ JUSTIA న్యాయ <strong>సమాచారం</strong> అందిస్తుంది, న్యాయ <strong>సలహా</strong> కాదు. కట్టుబడి ఉండే న్యాయ సలహా కోసం లైసెన్స్ పొందిన న్యాయవాదిని సంప్రదించండి.',
+    'chat.placeholder':  'ఏ భాషలోనైనా మీ ప్రశ్న టైప్ చేయండి…',
+    'chat.meta':         '🔒 ఎండ్-టు-ఎండ్ ఎన్‌క్రిప్టెడ్ · JUSTIA AI ద్వారా · ',
+    'guard.label':       'న్యాయ రక్షణలు',
+    'guard.title':       'బాధ్యతాయుత AI కోసం<br><em>నిర్మించబడింది.</em>',
+    'ethics.label':      'నైతిక AI ఫ్రేమ్‌వర్క్',
+    'ethics.title':      'న్యాయం ఒక<br><em>ఫీచర్ కాదు — అది పునాది.</em>',
+    'ethics.desc':       'JUSTIA యొక్క నైతిక నిర్మాణం ప్రతి వినియోగదారుకు సమాన, ఖచ్చితమైన మరియు సాంస్కృతికంగా గౌరవప్రదమైన న్యాయ సమాచారాన్ని నిర్ధారిస్తుంది.',
+    'impact.label':      'ప్రభావం & రోడ్‌మ్యాప్',
+    'impact.title':      'భారతదేశం అంతటా<br><em>న్యాయం విస్తరిస్తోంది.</em>',
+    'tech.label':        'నిర్మాణం',
+    'tech.title':        'మొదటి రోజు నుండి<br><em>ప్రొడక్షన్-గ్రేడ్.</em>',
+    'cta.title':         'న్యాయానికి ప్రాప్యత<br>ఒక <em>హక్కు,</em><br>హక్కు మాత్రమే.',
+    'cta.subtitle':      'భారతీయ న్యాయాన్ని ప్రతి పౌరుడికి అందుబాటులో మరియు అర్థమయ్యేలా చేయడానికి JUSTIA తో చేరండి.',
+    'cta.btn1':          '⚖️ JUSTIA ని ఉచితంగా ప్రయత్నించండి',
+    'cta.btn2':          '📩 మాతో భాగస్వాముడు అవ్వండి',
+    'cta.btn3':          '📄 పిచ్ డెక్ డౌన్‌లోడ్ చేయండి',
+  },
+  bn: {
+    'nav.problem':       'সমস্যা',
+    'nav.solution':      'সমাধান',
+    'nav.demo':          'লাইভ ডেমো',
+    'nav.ethics':        'নৈতিকতা',
+    'nav.impact':        'প্রভাব',
+    'nav.cta':           'ডেমো দেখুন →',
+    'hero.badge':        'আইনি অ্যাক্সেসের জন্য বহুভাষিক AI',
+    'hero.title':        'আপনার ভাষায়<br><em>কথা বলে আইন।</em>',
+    'hero.subtitle':     'JUSTIA ভারতের জটিল আইনি ব্যবস্থাকে প্রতিটি নাগরিকের কাছে সহজলভ্য করে — বাংলা, হিন্দি, তামিল, তেলুগু এবং আরও ভাষায় — AI নির্দেশনা এবং ধাপে ধাপে প্রক্রিয়াসহ।',
+    'hero.btn1':         '⚖️ আইনি প্রশ্ন করুন',
+    'hero.btn2':         'আরও জানুন ↓',
+    'hero.stat1.num':    '১.৪B',
+    'hero.stat1.label':  'সেবাবঞ্চিত জনগণ',
+    'hero.stat2.num':    '২২',
+    'hero.stat2.label':  'সরকারি ভাষা',
+    'hero.stat3.num':    '৫M+',
+    'hero.stat3.label':  'বিচারাধীন মামলা',
+    'prob.label':        'সমস্যা',
+    'prob.title':        'বিচার বৃহৎ আকারে<br><em>অপ্রাপ্য।</em>',
+    'prob.desc':         'ভারতের আইনি ব্যবস্থা বিশ্বের অন্যতম জটিল — দামি আইনজীবী এবং ইংরেজি সাক্ষরতা ছাড়া নেভিগেট করা প্রায় অসম্ভব।',
+    'prob.chart.title':  'ভাষা গোষ্ঠী অনুযায়ী আইনি সচেতনতা (%)',
+    'prob.c1.title':     'আইনজীবী দিতে পারেন না',
+    'prob.c1.desc':      '৮০% এরও বেশি ভারতীয় মানক আইনি ফি বহন করতে পারেন না, যার ফলে বিরোধ বছরের পর বছর অমীমাংসিত থাকে।',
+    'prob.c2.title':     'আদালতে বিচারাধীন মামলা',
+    'prob.c2.desc':      'ভারতের বিচার বিভাগে আনুমানিক ৪৭ মিলিয়ন+ বিচারাধীন মামলা রয়েছে, গড় অপেক্ষার সময় ১৩ বছর।',
+    'prob.c3.title':     'আইনি তথ্য ইংরেজিতে',
+    'prob.c3.desc':      'প্রায় সমস্ত সরকারি আইনি ডকুমেন্টেশন এবং অনলাইন রিসোর্স শুধুমাত্র ইংরেজিতে পাওয়া যায়।',
+    'prob.c4.title':     'গ্রামীণ জনগণ বাদ পড়েছে',
+    'prob.c4.desc':      'ভারতের জনসংখ্যার দুই-তৃতীয়াংশ গ্রামীণ এলাকায় বাস করে যেখানে আইনি পেশাদারদের অ্যাক্সেস প্রায় নেই।',
+    'sol.label':         'সমাধান',
+    'sol.title':         'JUSTIA ন্যায়বিচারের<br><em>ব্যবধান পূরণ করে।</em>',
+    'sol.desc':          'আপনার পরিস্থিতি বুঝে, ধাপে ধাপে গাইড করে এবং সঠিক সম্পদের সাথে সংযুক্ত করে এমন AI-চালিত বহুভাষিক আইনি সহকারী।',
+    'demo.label':        'লাইভ ডেমো',
+    'demo.title':        'JUSTIA কে কাজ করতে দেখুন।',
+    'demo.desc':         'বাস্তব উদাহরণ: ভাড়া জমানো বিরোধ। JUSTIA কীভাবে একজন ব্যবহারকারীকে সমস্যা থেকে পদক্ষেপে গাইড করে তা দেখুন।',
+    'demo.case.label':   'উদাহরণ মামলা',
+    'demo.case.title':   '🏠 ভাড়া জমানো বিরোধ',
+    'demo.case.desc':    'বাড়িওয়ালা ভাড়া শেষ হওয়ার পরে সিকিউরিটি ডিপোজিট ফেরত দিতে অস্বীকার করছেন',
+    'chat.disclaimer':   '⚠️ JUSTIA আইনি <strong>তথ্য</strong> প্রদান করে, আইনি <strong>পরামর্শ</strong> নয়। বাধ্যকারী আইনি পরামর্শের জন্য একজন লাইসেন্সপ্রাপ্ত আইনজীবীর সাথে পরামর্শ করুন।',
+    'chat.placeholder':  'যেকোনো ভাষায় আপনার প্রশ্ন টাইপ করুন…',
+    'chat.meta':         '🔒 এন্ড-টু-এন্ড এনক্রিপ্টেড · JUSTIA AI দ্বারা · ',
+    'guard.label':       'আইনি সুরক্ষা',
+    'guard.title':       'দায়িত্বশীল AI এর জন্য<br><em>নির্মিত।</em>',
+    'ethics.label':      'নৈতিক AI কাঠামো',
+    'ethics.title':      'ন্যায্যতা কোনো<br><em>বৈশিষ্ট্য নয় — এটি ভিত্তি।</em>',
+    'ethics.desc':       'JUSTIA এর নৈতিক স্থাপত্য প্রতিটি ব্যবহারকারীর জন্য সমান, সঠিক এবং সাংস্কৃতিকভাবে সম্মানজনক আইনি তথ্য নিশ্চিত করে।',
+    'impact.label':      'প্রভাব ও রোডম্যাপ',
+    'impact.title':      'সারা ভারতে<br><em>ন্যায়বিচার ছড়িয়ে পড়ছে।</em>',
+    'tech.label':        'আর্কিটেকচার',
+    'tech.title':        'প্রথম দিন থেকেই<br><em>প্রোডাকশন-গ্রেড।</em>',
+    'cta.title':         'আইনে প্রবেশাধিকার<br>একটি <em>অধিকার,</em><br>সুবিধা নয়।',
+    'cta.subtitle':      'প্রতিটি নাগরিকের কাছে ভারতীয় আইনকে সহজলভ্য ও বোধগম্য করতে JUSTIA এর সাথে যোগ দিন।',
+    'cta.btn1':          '⚖️ JUSTIA বিনামূল্যে ব্যবহার করুন',
+    'cta.btn2':          '📩 আমাদের সাথে অংশীদার হন',
+    'cta.btn3':          '📄 পিচ ডেক ডাউনলোড করুন',
+  }
+};
+
+let currentLang = 'en';
+
+function switchLang(btn, lang) {
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentLang = lang;
+  document.getElementById('lang-indicator').textContent = langLabels[lang];
+  applyTranslations(lang);
+  // Reset chat for new language
+  resetChat(lang);
+}
+
+function applyTranslations(lang) {
+  const t = translations[lang];
+  if (!t) return;
+  // Apply all elements with data-i18n attribute
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key] !== undefined) {
+      el.innerHTML = t[key];
+    }
+  });
+  // Update placeholder separately
+  const input = document.getElementById('chat-input');
+  if (input && t['chat.placeholder']) input.placeholder = t['chat.placeholder'];
+  // Update meta
+  const meta = document.querySelector('.input-meta');
+  if (meta && t['chat.meta']) meta.innerHTML = t['chat.meta'] + `<span id="lang-indicator">${langLabels[lang]}</span>`;
+}
+
+function resetChat(lang) {
+  const t = translations[lang] || translations['en'];
+  conversationState = { stage: 'welcome', state: null, duration: null };
+  const messagesEl = document.getElementById('chat-messages');
+  messagesEl.innerHTML = '';
+  setStep(1);
+  // Welcome messages by language
+  const welcomeMsgs = {
+    en: "Hello! I'm JUSTIA, your multilingual AI legal assistant. 🙏<br>What legal issue can I help you understand today?",
+    hi: "नमस्ते! मैं JUSTIA हूँ — आपका AI कानूनी सहायक। 🙏<br>आज मैं आपकी किस कानूनी समस्या में मदद कर सकता हूँ?",
+    ta: "வணக்கம்! நான் JUSTIA — உங்கள் AI சட்ட உதவியாளர். 🙏<br>இன்று நான் உங்களுக்கு எந்த சட்ட சிக்கலில் உதவலாம்?",
+    te: "నమస్కారం! నేను JUSTIA — మీ AI న్యాయ సహాయకుడు. 🙏<br>ఈరోజు మీకు ఏ న్యాయ సమస్యలో సహాయం చేయగలను?",
+    bn: "নমস্কার! আমি JUSTIA — আপনার AI আইনি সহকারী। 🙏<br>আজ আমি আপনাকে কোন আইনি সমস্যায় সাহায্য করতে পারি?",
+  };
+  const qrOptions = {
+    en: ['🏠 Rental deposit dispute', '👷 Labour / wage issue', '🛒 Consumer complaint', '👨‍👩‍👧 Family law matter'],
+    hi: ['🏠 किराया जमा विवाद', '👷 श्रम / वेतन मुद्दा', '🛒 उपभोक्ता शिकायत', '👨‍👩‍👧 पारिवारिक कानून'],
+    ta: ['🏠 வாடகை வைப்புத்தொகை', '👷 தொழிலாளர் / ஊதியம்', '🛒 நுகர்வோர் புகார்', '👨‍👩‍👧 குடும்ப சட்டம்'],
+    te: ['🏠 అద్దె డిపాజిట్', '👷 కార్మిక / వేతన సమస్య', '🛒 వినియోగదారు ఫిర్యాదు', '👨‍👩‍👧 కుటుంబ న్యాయం'],
+    bn: ['🏠 ভাড়া জমানো বিরোধ', '👷 শ্রম / মজুরি সমস্যা', '🛒 ভোক্তা অভিযোগ', '👨‍👩‍👧 পারিবারিক আইন'],
+  };
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    addMsg('bot', welcomeMsgs[lang] || welcomeMsgs['en']);
+    addQuickReplies(qrOptions[lang] || qrOptions['en']);
+  }, 600);
+}
+
+// ── SCROLL ANIMATIONS ─────────────────────────────
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      // stagger children
+      e.target.querySelectorAll('.reveal').forEach((el, i) => {
+        setTimeout(() => el.classList.add('visible'), i * 80);
+      });
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── NAV SCROLL ────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').style.background =
+    window.scrollY > 50 ? 'rgba(13,13,20,0.95)' : 'rgba(13,13,20,0.7)';
+});
+
+// ════════════════════════════════════════════════════════════
+//  JUSTIA CHAT — Connected to FastAPI Backend
+//  Backend URL: change BACKEND_URL to match your server
+// ════════════════════════════════════════════════════════════
+
+// ── CONFIG ────────────────────────────────────────────────────
+// When running locally:  http://localhost:8000
+// When deployed:         https://your-app.onrender.com
+const BACKEND_URL = 'http://localhost:8000';
+let backendOnline = false;
+
+// Check if backend is reachable
+async function checkBackend() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/health`, { signal: AbortSignal.timeout(3000) });
+    const data = await res.json();
+    backendOnline = data.status === 'healthy';
+    updateConnectionBadge(backendOnline, data.claude_available);
+  } catch {
+    backendOnline = false;
+    updateConnectionBadge(false, false);
+  }
+}
+
+function updateConnectionBadge(online, claudeAvailable) {
+  const statusEl = document.querySelector('.chat-agent-status');
+  if (!statusEl) return;
+  if (online && claudeAvailable) {
+    statusEl.innerHTML = '<div class="status-dot"></div> Claude AI · Live';
+    statusEl.style.color = 'var(--jade)';
+  } else if (online) {
+    statusEl.innerHTML = '<div class="status-dot" style="background:var(--gold)"></div> Backend · Mock AI';
+    statusEl.style.color = 'var(--gold)';
+  } else {
+    statusEl.innerHTML = '<div class="status-dot" style="background:var(--muted)"></div> Offline · Demo mode';
+    statusEl.style.color = 'var(--muted)';
+  }
+}
+
+// ── STATE ─────────────────────────────────────────────────────
+let currentStep = 1;
+let conversationHistory = [];   // sent to backend for context
+let conversationState = {
+  stage: 'welcome',
+  state: null,
+  stateId: null,
+  caseType: null,
+  duration: null,
+};
+
+const messagesEl = document.getElementById('chat-messages');
+const stepsEls = {
+  1: document.getElementById('step-1'),
+  2: document.getElementById('step-2'),
+  3: document.getElementById('step-3'),
+  4: document.getElementById('step-4'),
+  5: document.getElementById('step-5'),
+  6: document.getElementById('step-6'),
+};
+
+// ── UI HELPERS ────────────────────────────────────────────────
+function addMsg(role, html, extraClass = '') {
+  const wrap = document.createElement('div');
+  wrap.className = `msg from-${role} ${extraClass}`;
+  wrap.innerHTML = `
+    <div class="msg-sender">${role === 'bot' ? 'JUSTIA ⚖️' : 'You'}</div>
+    <div class="msg-content">${html}</div>`;
+  messagesEl.appendChild(wrap);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  // Track history for backend
+  conversationHistory.push({ role: role === 'bot' ? 'assistant' : 'user', content: html.replace(/<[^>]+>/g, '') });
+  return wrap;
+}
+
+function addQuickReplies(options) {
+  const el = document.createElement('div');
+  el.className = 'quick-replies';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'qr-btn';
+    btn.textContent = opt;
+    btn.onclick = () => handleQuickReply(opt, el);
+    el.appendChild(btn);
+  });
+  messagesEl.appendChild(el);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function handleQuickReply(text, container) {
+  container.querySelectorAll('.qr-btn').forEach(b => { b.disabled = true; b.style.opacity = '0.4'; });
+  addMsg('user', text);
+  setTimeout(() => processInput(text), 300);
+}
+
+function showTyping() {
+  const t = document.createElement('div');
+  t.className = 'msg from-bot'; t.id = 'typing';
+  t.innerHTML = `<div class="msg-sender">JUSTIA ⚖️</div>
+    <div class="typing-indicator">
+      <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+    </div>`;
+  messagesEl.appendChild(t);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+function setStep(n) {
+  Object.keys(stepsEls).forEach(k => {
+    const el = stepsEls[k]; if (!el) return;
+    el.classList.remove('active', 'done');
+    if (parseInt(k) < n) el.classList.add('done');
+    if (parseInt(k) === n) el.classList.add('active');
+  });
+  currentStep = n;
+}
+
+// ── BACKEND API CALLS ─────────────────────────────────────────
+async function callBackendChat(message) {
+  const res = await fetch(`${BACKEND_URL}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message,
+      language: currentLang,
+      state: conversationState.stateId,
+      case_type: conversationState.caseType,
+      conversation_history: conversationHistory.slice(-10),
+    }),
+  });
+  return await res.json();
+}
+
+async function fetchLegalInfo(caseType, stateId) {
+  const res = await fetch(`${BACKEND_URL}/api/legal-info/${caseType}/${stateId}`);
+  return await res.json();
+}
+
+async function fetchNGOs(stateId, caseType) {
+  const res = await fetch(`${BACKEND_URL}/api/ngos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ state: stateId, case_type: caseType }),
+  });
+  return await res.json();
+}
+
+async function fetchCourtCase(caseNumber) {
+  const res = await fetch(`${BACKEND_URL}/api/court-lookup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ case_number: caseNumber }),
+  });
+  return await res.json();
+}
+
+// ── STATE DETECTION ───────────────────────────────────────────
+const STATE_MAP = {
+  'maharashtra': 'maharashtra', 'mumbai': 'maharashtra', 'pune': 'maharashtra',
+  'delhi': 'delhi', 'new delhi': 'delhi',
+  'karnataka': 'karnataka', 'bangalore': 'karnataka', 'bengaluru': 'karnataka',
+  'tamil nadu': 'tamil_nadu', 'chennai': 'tamil_nadu', 'tamilnadu': 'tamil_nadu',
+  'telangana': 'telangana', 'hyderabad': 'telangana',
+  'west bengal': 'west_bengal', 'kolkata': 'west_bengal', 'calcutta': 'west_bengal',
+  'bengal': 'west_bengal',
+};
+
+const CASE_TYPE_MAP = {
+  'rental': 'rental_deposit', 'deposit': 'rental_deposit', 'landlord': 'rental_deposit',
+  'tenant': 'rental_deposit', 'rent': 'rental_deposit', 'किराया': 'rental_deposit',
+  'salary': 'labour_wage', 'wage': 'labour_wage', 'labour': 'labour_wage',
+  'job': 'labour_wage', 'employer': 'labour_wage', 'वेतन': 'labour_wage',
+  'consumer': 'consumer_complaint', 'product': 'consumer_complaint',
+  'refund': 'consumer_complaint', 'defect': 'consumer_complaint',
+  'violence': 'domestic_violence', 'domestic': 'domestic_violence',
+};
+
+function detectState(text) {
+  const lower = text.toLowerCase();
+  for (const [key, val] of Object.entries(STATE_MAP)) {
+    if (lower.includes(key)) return val;
+  }
+  return null;
+}
+
+function detectCaseType(text) {
+  const lower = text.toLowerCase();
+  for (const [key, val] of Object.entries(CASE_TYPE_MAP)) {
+    if (lower.includes(key)) return val;
+  }
+  return null;
+}
+
+// ── RENDER RICH LEGAL INFO from Backend ──────────────────────
+function renderLegalInfo(data) {
+  const ct = data.case_type;
+  const st = data.state;
+
+  // Documents
+  const docItems = ct.required_documents.map(d =>
+    `<div class="doc-item"><span class="doc-check">✓</span><span>${d}</span></div>`
+  ).join('');
+
+  const docDiv = document.createElement('div');
+  docDiv.className = 'msg from-bot';
+  docDiv.innerHTML = `<div class="msg-sender">JUSTIA ⚖️</div>
+    <div class="msg-content">
+      <div class="msg-doc-list">
+        <div class="doc-list-title">📁 Documents You Need to Collect</div>
+        ${docItems}
+      </div>
+    </div>`;
+  messagesEl.appendChild(docDiv);
+
+  // Steps
+  setTimeout(() => {
+    setStep(5);
+    const stepItems = ct.steps.map(s =>
+      `<div class="step-item">
+        <div class="step-num">${s.step}</div>
+        <div><strong>${s.title}</strong> — ${s.description}
+          <div style="margin-top:4px;font-size:11px;color:var(--muted)">
+            ⏱ ${s.timeline} &nbsp;|&nbsp; 💰 ${s.cost} &nbsp;|&nbsp; ${s.diy ? '✅ Can do yourself' : '👨‍⚖️ Lawyer helpful'}
+          </div>
+        </div>
+      </div>`
+    ).join('');
+
+    const stepsDiv = document.createElement('div');
+    stepsDiv.className = 'msg from-bot';
+    stepsDiv.innerHTML = `<div class="msg-sender">JUSTIA ⚖️</div>
+      <div class="msg-content">
+        <div class="msg-steps">
+          <div class="steps-title">🗺️ Your Step-by-Step Action Plan</div>
+          ${stepItems}
+        </div>
+      </div>`;
+    messagesEl.appendChild(stepsDiv);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    // Sources + disclaimer
+    setTimeout(() => {
+      setStep(6);
+      const actList = ct.primary_acts.map(a => `<div class="source-item">• ${a}</div>`).join('');
+      const srcDiv = document.createElement('div');
+      srcDiv.className = 'msg from-bot';
+      srcDiv.innerHTML = `<div class="msg-sender">JUSTIA ⚖️</div>
+        <div class="msg-content">
+          <div class="msg-source">
+            <div class="source-label">📚 Legal Sources</div>
+            ${actList}
+            <div class="source-item" style="margin-top:8px">
+              🏛️ ${st.legal_aid_authority} · Free helpline: <strong>${st.legal_aid_phone}</strong>
+            </div>
+            <div class="source-item">
+              <a href="https://indiacode.nic.in" target="_blank">indiacode.nic.in</a> · 
+              <a href="https://ecourts.gov.in" target="_blank">ecourts.gov.in</a> · 
+              <a href="${st.legal_aid_url}" target="_blank">${st.legal_aid_url.replace('https://','')}</a>
+            </div>
+          </div>
+          <div class="msg-not-advice">
+            ⚠️ This is legal <strong>information</strong>, not legal <strong>advice</strong>. For binding counsel, consult a licensed advocate. Free legal aid available if annual income &lt; ₹${st.income_limit_legal_aid?.toLocaleString('en-IN')}.
+          </div>
+        </div>`;
+      messagesEl.appendChild(srcDiv);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      addQuickReplies(['🤝 Find free legal aid near me', '🔍 Look up my court case', '📋 Download document checklist', '❓ Ask another question']);
+    }, 1200);
+  }, 1000);
+
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+// ── MAIN INPUT PROCESSOR ──────────────────────────────────────
+async function processInput(text) {
+  const lower = text.toLowerCase();
+  showTyping();
+
+  // ── Special commands ─────────────────────────────────────
+  if (lower.includes('court case') || lower.includes('look up') || lower.includes('case number')) {
+    removeTyping();
+    addMsg('bot', '🔍 <strong>Court Case Lookup</strong><br><br>Please enter your case number (e.g., CC/1234/2024):');
+    document.getElementById('chat-input').placeholder = 'Enter case number…';
+    conversationState.stage = 'court-lookup';
+    return;
+  }
+
+  if (conversationState.stage === 'court-lookup') {
+    try {
+      const data = await fetchCourtCase(text);
+      removeTyping();
+      if (data.found) {
+        const c = data.case;
+        const orders = c.orders.map(o => `<div style="margin-bottom:4px">📌 <strong>${o.date}</strong>: ${o.order}</div>`).join('');
+        addMsg('bot', `
+          <div class="msg-steps">
+            <div class="steps-title">🏛️ Case: ${c.case_number}</div>
+            <div class="step-item"><div class="step-num">📋</div><div><strong>Court:</strong> ${c.court}</div></div>
+            <div class="step-item"><div class="step-num">👤</div><div><strong>Petitioner:</strong> ${c.petitioner}</div></div>
+            <div class="step-item"><div class="step-num">📅</div><div><strong>Next Hearing:</strong> ${c.next_hearing}</div></div>
+            <div class="step-item"><div class="step-num">⚖️</div><div><strong>Stage:</strong> ${c.stage} · Status: ${c.status}</div></div>
+          </div>
+          <div style="margin-top:12px"><strong>Order History:</strong><br>${orders}</div>
+          <div class="msg-not-advice" style="margin-top:8px">Data from eCourts (demo). Visit <a href="https://ecourts.gov.in" target="_blank">ecourts.gov.in</a> for live data.</div>
+        `);
+      } else {
+        addMsg('bot', `Case not found in demo database. <a href="https://ecourts.gov.in" target="_blank" style="color:var(--gold)">Search live on eCourts →</a>`);
+      }
+    } catch {
+      removeTyping();
+      addMsg('bot', 'Could not reach court lookup service. <a href="https://ecourts.gov.in" target="_blank" style="color:var(--gold)">Try eCourts directly →</a>');
+    }
+    conversationState.stage = 'general';
+    addQuickReplies(['❓ Ask another question', '🤝 Find legal aid']);
+    return;
+  }
+
+  if (lower.includes('legal aid') || lower.includes('ngo') || lower.includes('free lawyer')) {
+    removeTyping();
+    setStep(6);
+    if (conversationState.stateId && conversationState.caseType && backendOnline) {
+      try {
+        const data = await fetchNGOs(conversationState.stateId, conversationState.caseType);
+        const ngoCards = data.ngos.map(n =>
+          `<div class="step-item">
+            <div class="step-num">🤝</div>
+            <div>
+              <strong>${n.name}</strong><br>
+              <span style="color:var(--jade);font-size:12px">📞 ${n.phone}</span>
+              ${n.url ? ` · <a href="${n.url}" target="_blank" style="color:var(--gold);font-size:12px">${n.url.replace('https://','')}</a>` : ''}
+              ${n.note ? `<br><span style="color:var(--muted);font-size:12px">ℹ️ ${n.note}</span>` : ''}
+            </div>
+          </div>`
+        ).join('');
+        addMsg('bot', `<div class="msg-steps"><div class="steps-title">🤝 Free Legal Aid Near You</div>${ngoCards}</div>`);
+      } catch {
+        addMsg('bot', '🤝 <strong>NALSA (National Legal Services Authority)</strong><br>📞 Helpline: <strong>15100</strong> (free, 24/7)<br><a href="https://nalsa.gov.in" target="_blank" style="color:var(--gold)">nalsa.gov.in</a>');
+      }
+    } else {
+      addMsg('bot', '🤝 <strong>NALSA (National Legal Services Authority)</strong><br>📞 Helpline: <strong>15100</strong> (free, 24/7)<br>Free legal aid if income &lt; ₹3 lakh/year<br><a href="https://nalsa.gov.in" target="_blank" style="color:var(--gold)">nalsa.gov.in →</a>');
+    }
+    return;
+  }
+
+  // ── Main Flow: Detect state from this message ─────────────
+  const detectedState = detectState(text);
+  if (detectedState && !conversationState.stateId) {
+    conversationState.stateId = detectedState;
+    conversationState.state = text;
+  }
+
+  const detectedCase = detectCaseType(text);
+  if (detectedCase && !conversationState.caseType) {
+    conversationState.caseType = detectedCase;
+  }
+
+  // ── If we have both state + case type → fetch full legal info ──
+  if (conversationState.stateId && conversationState.caseType && conversationState.stage !== 'full-info-shown') {
+    conversationState.stage = 'full-info-shown';
+    setStep(3);
+
+    if (backendOnline) {
+      try {
+        // Get AI explanation first
+        const chatData = await callBackendChat(text);
+        removeTyping();
+        addMsg('bot', chatData.reply.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>'));
+
+        // Then fetch structured legal data
+        setStep(4);
+        const legalData = await fetchLegalInfo(conversationState.caseType, conversationState.stateId);
+        renderLegalInfo(legalData);
+        return;
+      } catch (e) {
+        console.log('Backend error, using fallback', e);
+      }
+    }
+
+    // Offline fallback
+    removeTyping();
+    addMsg('bot', getOfflineLegalExplanation(conversationState.caseType, conversationState.stateId));
+    setStep(4);
+    renderOfflineDocs(conversationState.caseType);
+    return;
+  }
+
+  // ── Stage-based conversation flow ─────────────────────────
+  if (conversationState.stage === 'welcome') {
+    conversationState.stage = 'ask-state';
+    setStep(2);
+
+    if (backendOnline) {
+      try {
+        const data = await callBackendChat(text);
+        removeTyping();
+        addMsg('bot', data.reply.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'));
+        addQuickReplies(['Maharashtra', 'Delhi', 'Karnataka', 'Tamil Nadu', 'Telangana', 'West Bengal']);
+        return;
+      } catch {}
+    }
+
+    removeTyping();
+    const caseDetected = detectCaseType(text);
+    conversationState.caseType = caseDetected;
+    const msg = caseDetected
+      ? `I can help with <strong>${caseDetected.replace('_', ' ')}</strong>. To give you accurate state-specific information — <strong>which state are you in?</strong>`
+      : `I can help with that. Laws vary by state — <strong>which state are you in?</strong>`;
+    addMsg('bot', msg);
+    addQuickReplies(['Maharashtra', 'Delhi', 'Karnataka', 'Tamil Nadu', 'Telangana', 'West Bengal']);
+
+  } else if (conversationState.stage === 'ask-state' && !conversationState.stateId) {
+    const stateId = detectState(text) || 'maharashtra';
+    conversationState.stateId = stateId;
+    conversationState.stage = 'ask-duration';
+    setStep(2);
+    removeTyping();
+    addMsg('bot', `Got it — <strong>${text}</strong>. How long has the issue been going on?`);
+    addQuickReplies(['Less than 1 month', '1–3 months', '3–6 months', 'Over 6 months']);
+
+  } else if (conversationState.stage === 'ask-duration') {
+    conversationState.duration = text;
+    conversationState.stage = 'ask-amount';
+    removeTyping();
+    addMsg('bot', 'Understood. <strong>What is the approximate amount involved?</strong> This determines which forum you can approach.');
+    addQuickReplies(['Under ₹10,000', '₹10,000–₹1 lakh', '₹1–10 lakhs', 'Over ₹10 lakhs']);
+
+  } else if (conversationState.stage === 'ask-amount') {
+    conversationState.stage = 'full-info-shown';
+    setStep(3);
+
+    if (backendOnline && conversationState.stateId && conversationState.caseType) {
+      try {
+        const chatData = await callBackendChat(`${conversationState.caseType} case in ${conversationState.stateId}, amount: ${text}`);
+        removeTyping();
+        addMsg('bot', chatData.reply.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>'));
+        setStep(4);
+        const legalData = await fetchLegalInfo(conversationState.caseType || 'rental_deposit', conversationState.stateId);
+        renderLegalInfo(legalData);
+        return;
+      } catch {}
+    }
+
+    removeTyping();
+    addMsg('bot', getOfflineLegalExplanation(conversationState.caseType || 'rental_deposit', conversationState.stateId || 'maharashtra'));
+    setStep(4);
+    renderOfflineDocs(conversationState.caseType || 'rental_deposit');
+
+  } else {
+    // General chat — send to backend or give helpful fallback
+    if (backendOnline) {
+      try {
+        const data = await callBackendChat(text);
+        removeTyping();
+        addMsg('bot', data.reply.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>'));
+        addQuickReplies(['🤝 Find legal aid', '🔍 Court case lookup', '🔄 Start new question']);
+        return;
+      } catch {}
+    }
+    removeTyping();
+    addMsg('bot', `I'm here to help! You can ask me about rental disputes, labour rights, consumer complaints, or domestic violence support. What would you like to know? 🙏`);
+    addQuickReplies(['🏠 Rental deposit', '👷 Labour issue', '🛒 Consumer complaint', '🛡️ Domestic violence help']);
+  }
+}
+
+// ── OFFLINE FALLBACKS ─────────────────────────────────────────
+function getOfflineLegalExplanation(caseType, stateId) {
+  const explanations = {
+    rental_deposit: `🏠 <strong>Rental Deposit — What the Law Says</strong><br><br>
+      Under the <em>Model Tenancy Act, 2021</em>, your landlord must return the deposit within <strong>30 days</strong> of you vacating. Delay attracts <strong>15% annual interest</strong>. Deductions are only valid for documented damage beyond normal wear and tear.<br><br>
+      <em>The law is clearly on your side in most deposit disputes.</em>`,
+    labour_wage: `👷 <strong>Labour Rights — What the Law Says</strong><br><br>
+      Under the <em>Payment of Wages Act, 1936</em>, wages must be paid by the 7th of the following month. The <em>Code on Wages, 2019</em> ensures minimum wage protection across all sectors.<br><br>
+      <em>Filing with the Labour Commissioner is free and resolves 68% of cases.</em>`,
+    consumer_complaint: `🛒 <strong>Consumer Rights — What the Law Says</strong><br><br>
+      Under the <em>Consumer Protection Act, 2019</em>, you can file online at <a href="https://edaakhil.nic.in" target="_blank" style="color:var(--gold)">edaakhil.nic.in</a> for free. Companies must respond within 30 days by law.<br><br>
+      <em>No lawyer needed for complaints under ₹50 lakhs.</em>`,
+    domestic_violence: `🛡️ <strong>Domestic Violence — Immediate Help</strong><br><br>
+      🚨 <strong>Women's Helpline: 181</strong> (24/7, free, confidential)<br>
+      🚨 <strong>Police: 100</strong><br><br>
+      Under the <em>DV Act, 2005</em>, you can get Protection Orders, Residence Orders, and Monetary Relief without paying anything.`,
+  };
+  return explanations[caseType] || explanations.rental_deposit;
+}
+
+function renderOfflineDocs(caseType) {
+  const docs = {
+    rental_deposit: ['Rent agreement (original)', 'Deposit payment receipt / bank transfer', 'Vacating notice with delivery proof', 'Property condition photos at move-out', 'WhatsApp/email communication with landlord'],
+    labour_wage: ['Offer / appointment letter', 'Salary slips (3 months)', 'Bank statements', 'Termination letter (if applicable)', 'PF / UAN number'],
+    consumer_complaint: ['Bill / invoice', 'Payment proof (UPI/bank)', 'Warranty card', 'Product photos (if defective)', 'Company correspondence'],
+    domestic_violence: ['Medical reports', 'Photos of injuries (dated)', 'Written incident account', 'Witness contacts', 'Marriage certificate'],
+  };
+
+  const items = (docs[caseType] || docs.rental_deposit)
+    .map(d => `<div class="doc-item"><span class="doc-check">✓</span><span>${d}</span></div>`)
+    .join('');
+
+  setStep(4);
+  const docDiv = document.createElement('div');
+  docDiv.className = 'msg from-bot';
+  docDiv.innerHTML = `<div class="msg-sender">JUSTIA ⚖️</div>
+    <div class="msg-content">
+      <div class="msg-doc-list">
+        <div class="doc-list-title">📁 Documents to Collect</div>${items}
+      </div>
+    </div>`;
+  messagesEl.appendChild(docDiv);
+
+  setTimeout(() => {
+    setStep(6);
+    const disclaimer = document.createElement('div');
+    disclaimer.className = 'msg from-bot';
+    disclaimer.innerHTML = `<div class="msg-sender">JUSTIA ⚖️</div>
+      <div class="msg-content">
+        <div class="msg-not-advice">⚠️ This is legal <strong>information</strong>, not legal <strong>advice</strong>. Consult a licensed advocate for binding counsel. Free legal aid: call <strong>15100</strong> (NALSA).</div>
+      </div>`;
+    messagesEl.appendChild(disclaimer);
+    addQuickReplies(['🤝 Find free legal aid', '🔍 Court case lookup', '❓ Ask another question']);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }, 800);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+// ── SEND MESSAGE ──────────────────────────────────────────────
+function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = ''; input.style.height = 'auto';
+  addMsg('user', text.replace(/</g, '&lt;'));
+  processInput(text);
+}
+
+// ── VOICE TOGGLE ──────────────────────────────────────────────
+let voiceActive = false;
+function toggleVoice(btn) {
+  voiceActive = !voiceActive;
+  if (voiceActive) {
+    btn.innerHTML = `<div class="voice-bars"><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div><div class="vbar"></div></div>`;
+    // Web Speech API
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SR();
+      recognition.lang = { en:'en-IN', hi:'hi-IN', ta:'ta-IN', te:'te-IN', bn:'bn-IN' }[currentLang] || 'en-IN';
+      recognition.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        document.getElementById('chat-input').value = transcript;
+        voiceActive = false; btn.innerHTML = '🎙️';
+      };
+      recognition.onerror = () => { voiceActive = false; btn.innerHTML = '🎙️'; };
+      recognition.start();
+    } else {
+      setTimeout(() => { voiceActive = false; btn.innerHTML = '🎙️'; }, 3000);
+    }
+  } else {
+    btn.innerHTML = '🎙️';
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+window.addEventListener('load', async () => {
+  await checkBackend();
+
+  // Seed welcome message
+  setTimeout(() => {
+    showTyping();
+    setTimeout(() => {
+      removeTyping();
+      const welcomes = {
+        en: "Hello! I'm <strong>JUSTIA</strong> — your AI legal assistant for India. 🙏<br><br>I provide legal <em>information</em> (not advice) in simple language. What issue can I help you understand today?",
+        hi: "नमस्ते! मैं <strong>JUSTIA</strong> हूँ — आपका AI कानूनी सहायक। 🙏<br><br>आज मैं आपकी किस कानूनी समस्या में मदद कर सकता हूँ?",
+        ta: "வணக்கம்! நான் <strong>JUSTIA</strong> — உங்கள் AI சட்ட உதவியாளர். 🙏<br><br>இன்று நான் உங்களுக்கு எந்த சட்ட சிக்கலில் உதவலாம்?",
+        te: "నమస్కారం! నేను <strong>JUSTIA</strong> — మీ AI న్యాయ సహాయకుడు. 🙏<br><br>ఈరోజు మీకు ఏ న్యాయ సమస్యలో సహాయం చేయగలను?",
+        bn: "নমস্কার! আমি <strong>JUSTIA</strong> — আপনার AI আইনি সহকারী। 🙏<br><br>আজ আমি আপনাকে কোন আইনি সমস্যায় সাহায্য করতে পারি?",
+      };
+      addMsg('bot', welcomes[currentLang] || welcomes.en);
+      const qrOptions = {
+        en: ['🏠 Rental deposit dispute', '👷 Labour / wage issue', '🛒 Consumer complaint', '🛡️ Domestic violence help'],
+        hi: ['🏠 किराया जमा विवाद', '👷 श्रम / वेतन मुद्दा', '🛒 उपभोक्ता शिकायत', '🛡️ घरेलू हिंसा सहायता'],
+        ta: ['🏠 வாடகை வைப்பு', '👷 தொழிலாளர் / ஊதியம்', '🛒 நுகர்வோர் புகார்', '🛡️ கடும் வன்முறை'],
+        te: ['🏠 అద్దె డిపాజిట్', '👷 కార్మిక / వేతన సమస్య', '🛒 వినియోగదారు ఫిర్యాదు', '🛡️ గృహహింస సహాయం'],
+        bn: ['🏠 ভাড়া জমানো বিরোধ', '👷 শ্রম / মজুরি সমস্যা', '🛒 ভোক্তা অভিযোগ', '🛡️ পারিবারিক সহিংসতা'],
+      };
+      addQuickReplies(qrOptions[currentLang] || qrOptions.en);
+    }, 700);
+  }, 400);
+});
+</script>
+
+</body>
+</html>
